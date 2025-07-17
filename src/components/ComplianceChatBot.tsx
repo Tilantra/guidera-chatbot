@@ -310,9 +310,9 @@ export const ComplianceChatBot = () => {
               <Bot className="h-6 w-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-foreground">Compliance ChatBot</h1>
+              <h1 className="text-xl font-bold text-foreground">Guidera ChatBot</h1>
               <p className="text-sm text-muted-foreground">
-                AI-powered content verification with plagiarism and compliance checking
+              Enterprise AI Orchestration. Simplified
               </p>
             </div>
           </div>
@@ -322,10 +322,6 @@ export const ComplianceChatBot = () => {
             <Button variant="outline" size="sm" onClick={handleClearChat}>
               <RotateCcw className="h-4 w-4" />
               Clear
-            </Button>
-            <Button variant="outline" size="sm">
-              <Settings className="h-4 w-4" />
-              Settings
             </Button>
           </div>
         </div>
@@ -359,7 +355,7 @@ export const ComplianceChatBot = () => {
               {messages.length === 0 ? (
                 <Card className="p-8 text-center shadow-card bg-card">
                   <Bot className="h-12 w-12 mx-auto mb-4 text-primary" />
-                  <h3 className="text-lg font-semibold mb-2 text-foreground">Welcome to Compliance ChatBot</h3>
+                  <h3 className="text-lg font-semibold mb-2 text-foreground">Welcome to Guidera ChatBot</h3>
                   <p className="text-muted-foreground mb-6">
                     Send a message to analyze it for plagiarism and compliance violations. 
                     Our AI will check your content against multiple compliance standards and provide detailed feedback.

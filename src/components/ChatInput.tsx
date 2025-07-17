@@ -58,26 +58,31 @@ export const ChatInput = ({
         {/* Controls Row */}
         <div className="flex items-center justify-between gap-4">
           {/* Left side - CP Parameter Slider */}
-          <div className="flex items-center gap-3 flex-1 max-w-xs">
-            <Label htmlFor="cp-slider" className="text-xs whitespace-nowrap">CP:</Label>
-            <div className="flex-1 px-2">
-              <Slider
-                id="cp-slider"
-                min={0}
-                max={1}
-                step={0.1}
-                value={[cpValue]}
-                onValueChange={(value) => onCpChange?.(value[0])}
-                className="w-full"
-              />
-              <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                <span>cost saving</span>
-                <span>performance</span>
+          <div className="flex flex-col flex-1 max-w-xs">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-xs text-muted-foreground">Cost Saving</span>
+              <span className="text-xs text-muted-foreground">Performance</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="cp-slider" className="text-xs whitespace-nowrap">CP:</Label>
+              <div className="flex-1 px-2">
+                <div className="flex justify-center mb-1">
+                  <span className="text-xs font-semibold text-primary">{cpValue.toFixed(1)}</span>
+                </div>
+                <Slider
+                  id="cp-slider"
+                  min={0}
+                  max={1}
+                  step={0.1}
+                  value={[cpValue]}
+                  onValueChange={(value) => onCpChange?.(value[0])}
+                  className="w-full"
+                />
               </div>
             </div>
           </div>
 
-          {/* Center - Compliance Toggle */}
+          {/* Right side - Compliance Toggle and Send Button */}
           <div className="flex items-center gap-2">
             <Shield className="h-4 w-4 text-muted-foreground" />
             <Label htmlFor="compliance-toggle" className="text-xs">Compliance</Label>
@@ -86,26 +91,24 @@ export const ChatInput = ({
               checked={complianceEnabled}
               onCheckedChange={onComplianceToggle}
             />
+            <Button 
+              type="submit" 
+              disabled={!message.trim() || isLoading}
+              className="min-w-[100px]"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Analyzing...
+                </>
+              ) : (
+                <>
+                  <Send className="h-4 w-4" />
+                  Send
+                </>
+              )}
+            </Button>
           </div>
-
-          {/* Right side - Send Button */}
-          <Button 
-            type="submit" 
-            disabled={!message.trim() || isLoading}
-            className="min-w-[100px]"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Analyzing...
-              </>
-            ) : (
-              <>
-                <Send className="h-4 w-4" />
-                Send
-              </>
-            )}
-          </Button>
         </div>
       </form>
     </Card>

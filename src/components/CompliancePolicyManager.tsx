@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Shield } from "lucide-react";
+import { Plus, Shield, Trash } from "lucide-react";
 import { toast } from "sonner";
 
 interface CompliancePolicy {
@@ -138,6 +138,15 @@ export const CompliancePolicyManager = ({ complianceEnabled = true }: Compliance
                   <h3 className="font-semibold text-foreground mb-2">{policy.name}</h3>
                   <p className="text-sm text-muted-foreground">{policy.description}</p>
                 </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="ml-4 text-destructive hover:bg-destructive/10"
+                  onClick={() => setPolicies(prev => prev.filter(p => p.id !== policy.id))}
+                  aria-label="Delete policy"
+                >
+                  <Trash className="h-5 w-5" />
+                </Button>
               </div>
             </CardContent>
           </Card>
