@@ -1,0 +1,144 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Primary colors - purple theme */
+    --primary: 253 69% 59%;  /* #4E3CEF */
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 253 69% 69%;
+    --primary-variant: 253 59% 49%;
+    
+    /* Background colors - light mode */
+    --background: 0 0% 100%;  /* white */
+    --foreground: 0 0% 0%;    /* black */
+    
+    /* Card colors */
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+    
+    /* Popover colors */
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
+    
+    /* Secondary colors */
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 20%;
+    
+    /* Muted colors */
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+    
+    /* Accent colors */
+    --accent: 253 69% 59%;
+    --accent-foreground: 0 0% 100%;
+    
+    /* Destructive colors */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    
+    /* Success colors */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    
+    /* Warning colors */
+    --warning: 45 93% 47%;
+    --warning-foreground: 0 0% 100%;
+    
+    /* Border colors */
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 253 69% 59%;
+
+    /* Professional gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+    --gradient-subtle: linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted)));
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100% / 0.8), hsl(0 0% 100% / 0.4));
+
+    /* Professional shadows */
+    --shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.2);
+    --shadow-card: 0 4px 20px -4px hsl(215 25% 15% / 0.1);
+    --shadow-hover: 0 8px 30px -8px hsl(var(--primary) / 0.3);
+
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    /* Primary colors remain the same */
+    --primary: 253 69% 59%;  /* #4E3CEF */
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 253 69% 69%;
+    --primary-variant: 253 59% 49%;
+    
+    /* Dark background colors */
+    --background: 0 0% 0%;    /* black */
+    --foreground: 0 0% 100%;  /* white */
+    
+    /* Dark card colors */
+    --card: 0 0% 4%;
+    --card-foreground: 0 0% 100%;
+    
+    /* Dark popover colors */
+    --popover: 0 0% 4%;
+    --popover-foreground: 0 0% 100%;
+    
+    /* Dark secondary colors */
+    --secondary: 0 0% 8%;
+    --secondary-foreground: 0 0% 90%;
+    
+    /* Dark muted colors */
+    --muted: 0 0% 8%;
+    --muted-foreground: 0 0% 65%;
+    
+    /* Dark accent colors */
+    --accent: 253 69% 59%;
+    --accent-foreground: 0 0% 100%;
+    
+    /* Dark border colors */
+    --border: 0 0% 14%;
+    --input: 0 0% 14%;
+    --ring: 253 69% 59%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
