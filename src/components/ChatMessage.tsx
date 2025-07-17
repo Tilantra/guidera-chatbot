@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Card } from "./card";
-import { Badge } from "./badge";
-import { Button } from "./button";
+import { Card } from "../components/ui/card";
+import { Badge } from "../components/ui/badge";
+import { Separator } from "../components/ui/seperator";
+import { Button } from "../components/ui/button";
 import { CheckCircle, XCircle, AlertTriangle, ExternalLink, Brain, User, ChevronDown, ChevronUp, DollarSign, Zap, Clock } from "lucide-react";
 
 export interface PlagiarismCheck {
@@ -42,9 +43,11 @@ export interface ChatResponse {
 
 interface ChatMessageProps {
   message: ChatResponse;
+  isLoading?: boolean;
+  complianceEnabled?: boolean;
 }
 
-export const ChatMessage = ({ message }: ChatMessageProps) => {
+export const ChatMessage = ({ message, isLoading = false, complianceEnabled = true }: ChatMessageProps) => {
   const isUser = message.type === 'user';
   const [isPlagiarismExpanded, setIsPlagiarismExpanded] = useState(false);
   const [isComplianceExpanded, setIsComplianceExpanded] = useState(false);
@@ -78,6 +81,16 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
             <div className="px-4 pb-4">
               <div className="text-base leading-relaxed whitespace-pre-wrap font-medium">
                 {message.content}
+              </div>
+            </div>
+          )}
+
+          {/* Inline Loading Indicator */}
+          {isLoading && !isUser && (
+            <div className="px-4 pb-4">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                <span className="text-sm">Generating response...</span>
               </div>
             </div>
           )}
@@ -119,8 +132,8 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
             </div>
           )}
 
-          {/* Collapsible Sections - Only for non-failed compliance */}
-          {!complianceFailed && !isUser && (
+          {/* Collapsible Sections - Only show if compliance enabled and not failed */}
+          {complianceEnabled && !complianceFailed && !isUser && (message.plagiarismCheck || message.complianceCheck) && (
             <div className="border-t border-border/50">
               
               {/* Plagiarism Section - Collapsible */}
@@ -242,4 +255,4 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
       </div>
     </div>
   );
-}; 
+};
