@@ -151,7 +151,7 @@ const mockApiCall = async (message: string): Promise<Omit<ChatResponse, 'id' | '
   return scenarios[scenarioIndex];
 };
 
-export const ComplianceChatBot = () => {
+export const ComplianceChatBot = ({ onGenerate }: { onGenerate?: (prompt: string, cpValue: number, complianceEnabled: boolean) => Promise<any> }) => {
   const [messages, setMessages] = useState<ChatResponse[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("chat");
@@ -258,15 +258,56 @@ export const ComplianceChatBot = () => {
     setLoadingMessageId(loadingMessageId);
 
     try {
-      // Call API
-      const response = await mockApiCall(messageContent);
-      
-      // Replace loading message with actual response
+      // Call API (use onGenerate if provided)
+      let response = onGenerate
+        ? await onGenerate(messageContent, cpValue, complianceEnabled)
+        : await mockApiCall(messageContent);
+
+      // If onGenerate, prettify the response
+      let content: string;
+      if (onGenerate && typeof response === 'string') {
+        // Remove status lines and parse JSON
+        const lines = response.split(/\r?\n/).filter(line => {
+          return !/^(Picking best model for you|Checking compliance and generating response|Running policy checks|Running compliance checks)/.test(line.trim());
+        });
+        const jsonLine = lines.find(line => line.trim().startsWith('{'));
+        if (jsonLine) {
+          try {
+            const parsed = JSON.parse(jsonLine);
+            // Remove 'ner' from compliance_report if present
+            if (parsed && typeof parsed === 'object' && 'compliance_report' in parsed) {
+              const cr = parsed['compliance_report'];
+              if (cr && typeof cr === 'object' && 'ner' in cr) {
+                delete cr['ner'];
+              }
+            }
+            content = JSON.stringify(parsed, null, 2);
+          } catch {
+            content = lines.join('\n');
+          }
+        } else {
+          content = lines.join('\n');
+        }
+      } else if (onGenerate) {
+        // If response is already an object
+        // Remove 'ner' from compliance_report if present
+        let parsed = response;
+        if (parsed && typeof parsed === 'object' && 'compliance_report' in parsed) {
+          const cr = parsed['compliance_report'];
+          if (cr && typeof cr === 'object' && 'ner' in cr) {
+            delete cr['ner'];
+          }
+        }
+        content = JSON.stringify(parsed, null, 2);
+      } else {
+        content = response.content || '';
+      }
+
       const assistantMessage: ChatResponse = {
         id: loadingMessageId,
         type: 'assistant',
         timestamp: new Date(),
-        ...response
+        content
       };
 
       setMessages(prev => prev.map(msg => 
