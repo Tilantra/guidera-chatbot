@@ -1,4 +1,4 @@
-import { ComplianceChatBot } from "../components/ui/ComplianceChatBot";
+import { ComplianceChatBot } from "../components/ComplianceChatBot";
 
 const Index = () => {
   return <ComplianceChatBot />;
