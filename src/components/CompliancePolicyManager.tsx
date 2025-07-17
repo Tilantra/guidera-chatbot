@@ -12,6 +12,7 @@ interface CompliancePolicy {
   id: string;
   name: string;
   description: string;
+  type?: string;
 }
 
 interface CompliancePolicyManagerProps {
@@ -40,11 +41,12 @@ export const CompliancePolicyManager = ({ complianceEnabled = true }: Compliance
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newPolicy, setNewPolicy] = useState<Partial<CompliancePolicy>>({
     name: '',
-    description: ''
+    description: '',
+    type: '',
   });
 
   const handleAddPolicy = () => {
-    if (!newPolicy.name || !newPolicy.description) {
+    if (!newPolicy.name || !newPolicy.description || !newPolicy.type) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -52,13 +54,15 @@ export const CompliancePolicyManager = ({ complianceEnabled = true }: Compliance
     const policy: CompliancePolicy = {
       id: Date.now().toString(),
       name: newPolicy.name,
-      description: newPolicy.description
+      description: newPolicy.description,
+      type: newPolicy.type || 'input',
     };
 
     setPolicies(prev => [...prev, policy]);
     setNewPolicy({
       name: '',
-      description: ''
+      description: '',
+      type: '',
     });
     setIsAddDialogOpen(false);
     toast.success("Policy added successfully");
@@ -102,6 +106,24 @@ export const CompliancePolicyManager = ({ complianceEnabled = true }: Compliance
                   value={newPolicy.name || ''}
                   onChange={(e) => setNewPolicy(prev => ({ ...prev, name: e.target.value }))}
                 />
+                <div className="mb-6"></div>
+                <Label htmlFor="type">Type *</Label>
+                <div className="relative">
+                  <select
+                    id="type"
+                    value={newPolicy.type || ''}
+                    onChange={e => setNewPolicy(prev => ({ ...prev, type: e.target.value }))}
+                    className={`w-full border rounded p-2 mb-2 pr-8 appearance-none ${!newPolicy.type ? 'text-gray-400' : ''}`}
+                    required
+                  >
+                    <option value="" hidden>e.g., Input or Output</option>
+                    <option value="input">Input</option>
+                    <option value="output">Output</option>
+                  </select>
+                  <span className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                    ▼
+                  </span>
+                </div>
               </div>
               
               <div className="space-y-2">
@@ -135,7 +157,14 @@ export const CompliancePolicyManager = ({ complianceEnabled = true }: Compliance
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <h3 className="font-semibold text-foreground mb-2">{policy.name}</h3>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="font-semibold text-foreground">{policy.name}</h3>
+                    {policy.type && (
+                      <span className={`px-2 py-0.5 rounded text-xs font-semibold ${policy.type === 'input' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
+                        {policy.type.charAt(0).toUpperCase() + policy.type.slice(1)}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-sm text-muted-foreground">{policy.description}</p>
                 </div>
                 <Button

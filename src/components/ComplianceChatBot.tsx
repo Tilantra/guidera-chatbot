@@ -11,6 +11,7 @@ import { ThemeToggle } from "./ThemeToggle";
 import { LoadingIndicator } from "./LoggingIndicator";
 import { Shield, Brain, RotateCcw, Settings, MessageSquare, Wand2, Bot, BarChart3, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
+import GuideraLogo from '../components/assets/Guidera.png';
 
 // Mock API call - replace with your actual API endpoint
 const mockApiCall = async (message: string): Promise<Omit<ChatResponse, 'id' | 'type' | 'timestamp'>> => {
@@ -395,7 +396,7 @@ export const ComplianceChatBot = ({ onGenerate }: { onGenerate?: (prompt: string
             <div className="flex-1 overflow-y-auto py-4 space-y-4">
               {messages.length === 0 ? (
                 <Card className="p-8 text-center shadow-card bg-card">
-                  <Bot className="h-12 w-12 mx-auto mb-4 text-primary" />
+                  <img src={GuideraLogo} alt="Guidera Logo" className="h-25 w-25 mx-auto mb-4 object-contain" />
                   <h3 className="text-lg font-semibold mb-2 text-foreground">Welcome to Guidera ChatBot</h3>
                   <p className="text-muted-foreground mb-6">
                     Send a message to analyze it for plagiarism and compliance violations. 
@@ -404,19 +405,25 @@ export const ComplianceChatBot = ({ onGenerate }: { onGenerate?: (prompt: string
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                     <div className="p-3 rounded border border-border bg-secondary/50">
-                      <Shield className="h-5 w-5 text-primary mb-2" />
-                      <p className="font-medium text-foreground">Compliance Check</p>
-                      <p className="text-muted-foreground">Privacy, content guidelines, and policy validation</p>
+                      <p className="font-medium text-foreground flex items-center gap-2 justify-center text-center mb-2">
+                        <Shield className="h-5 w-5 text-primary" />
+                        Compliance Check
+                      </p>
+                      <p className="text-muted-foreground text-center">Privacy, content guidelines, and policy validation</p>
                     </div>
                     <div className="p-3 rounded border border-border bg-secondary/50">
-                      <Brain className="h-5 w-5 text-primary mb-2" />
-                      <p className="font-medium text-foreground">Plagiarism Detection</p>
-                      <p className="text-muted-foreground">Source identification and similarity analysis</p>
+                      <p className="font-medium text-foreground flex items-center gap-2 justify-center text-center mb-2">
+                        <Brain className="h-5 w-5 text-primary" />
+                        Plagiarism Detection
+                      </p>
+                      <p className="text-muted-foreground text-center">Source identification and similarity analysis</p>
                     </div>
                     <div className="p-3 rounded border border-border bg-secondary/50">
-                      <Settings className="h-5 w-5 text-primary mb-2" />
-                      <p className="font-medium text-foreground">AI Model Info</p>
-                      <p className="text-muted-foreground">Transparency in AI processing and analysis</p>
+                      <p className="font-medium text-foreground flex items-center gap-2 justify-center text-center mb-2">
+                        <Settings className="h-5 w-5 text-primary" />
+                        AI Model Info
+                      </p>
+                      <p className="text-muted-foreground text-center">Transparency in AI processing and analysis</p>
                     </div>
                   </div>
                 </Card>

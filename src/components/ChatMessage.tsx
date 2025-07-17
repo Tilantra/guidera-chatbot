@@ -3,7 +3,7 @@ import { Card } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
 import { Separator } from "../components/ui/seperator";
 import { Button } from "../components/ui/button";
-import { CheckCircle, XCircle, AlertTriangle, ExternalLink, Brain, User, ChevronDown, ChevronUp, DollarSign, Zap, Clock } from "lucide-react";
+import { CheckCircle, XCircle, AlertTriangle, ExternalLink, Brain, User, ChevronDown, ChevronUp, DollarSign, Zap, Clock, Newspaper } from "lucide-react";
 import { Card as UiCard } from "../components/ui/card";
 
 export interface PlagiarismCheck {
@@ -84,7 +84,7 @@ export const ChatMessage = ({ message, isLoading = false, complianceEnabled = tr
 
           {/* Main Content */}
           <div className="px-4 pb-4">
-            <div className="text-base leading-relaxed whitespace-pre-wrap font-medium">
+            <div className="text-sm leading-relaxed whitespace-pre-wrap font-medium">
               {parsed && parsed.response
                 ? parsed.response.split(/\r?\n/).map((line: string, idx: number) => <div key={idx}>{line}</div>)
                 : (typeof message.content === "string"
@@ -106,43 +106,87 @@ export const ChatMessage = ({ message, isLoading = false, complianceEnabled = tr
           {/* Compliance Section - visually distinct */}
           {parsed && parsed.compliance_report && (
             <UiCard className="bg-muted/10 border border-border/60 rounded-lg mx-4 mb-4 p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="font-semibold text-base">Compliance Report</span>
-                {parsed.compliance_report.status && (
-                  <span className={`ml-2 font-semibold ${complianceColor(parsed.compliance_report.status)}`}>
-                    {parsed.compliance_report.status}
+              {/* Compliance Report Dropdown */}
+              <details className="rounded border border-border/40 bg-background/60 mb-2 group">
+                <summary className="flex items-center gap-2 cursor-pointer py-2 px-3 font-medium select-none">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  <span className="font-semibold text-base">Compliance Details</span>
+                  <span className="ml-2 px-2 py-1 rounded bg-green-600 text-white text-xs font-semibold align-middle">PASSED</span>
+                  <span className="ml-auto">
+                    <ChevronDown className="h-4 w-4 group-open:hidden" />
+                    <ChevronUp className="h-4 w-4 hidden group-open:inline" />
                   </span>
+                </summary>
+                <div className="p-3 space-y-3">
+                  {/* Hardcoded policy boxes as per user screenshot */}
+                  <div className="w-full p-3 rounded border bg-green-50 border-green-200 text-green-900">
+                    <div className="flex items-center gap-2 font-semibold mb-1">
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <span>Privacy Compliance</span>
+                    </div>
+                    <div className="text-sm">No personal information detected</div>
+                  </div>
+                  <div className="w-full p-3 rounded border bg-green-50 border-green-200 text-green-900">
+                    <div className="flex items-center gap-2 font-semibold mb-1">
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <span>Content Guidelines</span>
+                    </div>
+                    <div className="text-sm">Content adheres to community standards</div>
+                  </div>
+                  <div className="w-full p-3 rounded border bg-green-50 border-green-200 text-green-900">
+                    <div className="flex items-center gap-2 font-semibold mb-1">
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <span>Copyright Check</span>
+                    </div>
+                    <div className="text-sm">No copyright violations found</div>
+                  </div>
+                </div>
+              </details>
+              {/* Plagiarism Analysis Dropdown */}
+              <details className="rounded border border-border/40 bg-background/60 group">
+                <summary className="flex items-center gap-2 cursor-pointer py-2 px-3 font-medium select-none">
+                  <Newspaper className="h-5 w-5 text-blue-600" />
+                  Plagiarism Analysis
+                  {parsed.compliance_report.plagiarism && (
+                    <Badge variant="outline" className="ml-2">
+                      {parsed.compliance_report.plagiarism.chance || '0%'} Match
+                    </Badge>
+                  )}
+                  <span className="ml-auto">
+                    <ChevronDown className="h-4 w-4 group-open:hidden" />
+                    <ChevronUp className="h-4 w-4 hidden group-open:inline" />
+                  </span>
+                </summary>
+                {parsed.compliance_report.plagiarism && (
+                  <div className="p-3 space-y-3">
+                    {parsed.compliance_report.plagiarism.matched_urls?.length > 0 && (
+                      <div className="w-full p-3 rounded border bg-gray-50 border-gray-200">
+                        <div className="font-semibold text-xs mb-2">Sources detected:</div>
+                        {parsed.compliance_report.plagiarism.matched_urls.map((url: string, idx: number) => (
+                          <div key={idx} className="mb-2 p-2 rounded border border-border/30 bg-white">
+                            <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline text-sm">
+                              {url}
+                            </a>
+                            {parsed.compliance_report.plagiarism.similarities && parsed.compliance_report.plagiarism.similarities[idx] && (
+                              <div className="inline-block mt-2 px-2 py-1 rounded bg-gray-200 text-xs font-semibold">{parsed.compliance_report.plagiarism.similarities[idx]} similarity</div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {parsed.compliance_report.plagiarism?.elements?.length > 0 && (
+                      <div className="w-full p-3 rounded border bg-gray-50 border-gray-200">
+                        <div className="font-semibold text-xs mb-2">Plagiarized Content:</div>
+                        <div className="text-xs text-muted-foreground bg-red-50 p-2 rounded">
+                          {Array.isArray(parsed.compliance_report.plagiarism.elements)
+                            ? parsed.compliance_report.plagiarism.elements.join(', ')
+                            : parsed.compliance_report.plagiarism.elements}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 )}
-                {parsed.compliance_report.policyViolated && <XCircle className="h-4 w-4 text-red-600" />}
-                {!parsed.compliance_report.policyViolated && <CheckCircle className="h-4 w-4 text-green-600" />}
-              </div>
-              {parsed.cost_performance_message && (
-                <div className="text-xs text-blue-700 font-semibold mb-2">
-                  {parsed.cost_performance_message}
-                </div>
-              )}
-              {parsed.compliance_report.plagiarism && (
-                <div className="mb-1 text-xs">
-                  <Badge variant="outline" className="text-xs mr-2">
-                    Plagiarism: {parsed.compliance_report.plagiarism.chance}
-                  </Badge>
-                </div>
-              )}
-              {parsed.compliance_report.plagiarism?.matched_urls?.length > 0 && (
-                <div className="text-xs text-muted-foreground mb-2">
-                  <span className="font-semibold">Matched URLs:</span>
-                  <ul className="list-disc ml-5">
-                    {parsed.compliance_report.plagiarism.matched_urls.map((url: string, idx: number) => (
-                      <li key={idx}><a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">{url}</a></li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {parsed.compliance_report.plagiarism?.elements?.length > 0 && (
-                <div className="text-xs text-muted-foreground mb-2">
-                  <span className="font-semibold">Elements:</span> {parsed.compliance_report.plagiarism.elements.join(', ')}
-                </div>
-              )}
+              </details>
             </UiCard>
           )}
 

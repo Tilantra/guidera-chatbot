@@ -81,6 +81,27 @@ export class BrowserGuideraClient {
     }
   }
 
+  async getSuggestions(prompt: string): Promise<any> {
+    if (!this.tokenValid()) {
+      throw new Error('Not authenticated');
+    }
+    const suggestionUrl = `${this.apiBaseUrl}/suggestion`;
+    const headers = {
+      Authorization: `Bearer ${this.authToken}`,
+      'Content-Type': 'application/json',
+    };
+    const requestData = { prompt };
+    const response = await axios.post(suggestionUrl, requestData, { headers });
+    if (response.status === 200) {
+      return response.data;
+    } else if (response.status === 401) {
+      this.clearJwt();
+      throw new Error('Session expired or invalid. Please log in again.');
+    } else {
+      throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
+    }
+  }
+
   logout() {
     this.clearJwt();
   }

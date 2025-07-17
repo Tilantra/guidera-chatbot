@@ -5,12 +5,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Copy, Wand2, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
+import { BrowserGuideraClient } from "../lib/guidera-browser-client";
+
+const client = new BrowserGuideraClient();
 
 export const PromptGenerator = () => {
   const [userInput, setUserInput] = useState("");
-  const [generatedPrompt, setGeneratedPrompt] = useState("");
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
   const generatePrompt = async () => {
     if (!userInput.trim()) {
@@ -19,39 +22,39 @@ export const PromptGenerator = () => {
     }
 
     setIsGenerating(true);
-    
-    // Simulate API call for prompt engineering
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    const engineeredPrompt = `You are a professional content compliance and plagiarism detection assistant. Your task is to analyze the following content: "${userInput.trim()}"
+    setSuggestions([]);
 
-Please provide a comprehensive analysis that includes:
-
-1. **Content Analysis**: Examine the text for originality, clarity, and structure
-2. **Plagiarism Detection**: Check for potential similarities with existing sources and provide similarity percentages
-3. **Compliance Verification**: Verify adherence to:
-   - Privacy regulations (PII detection)
-   - Content guidelines and community standards
-   - Copyright and intellectual property rights
-   - Professional ethical standards
-
-4. **Source Attribution**: If similarities are found, provide detailed source information including URLs and similarity percentages
-
-5. **Recommendations**: Suggest improvements for better compliance and originality
-
-Format your response with clear sections and actionable insights. Use a professional, detailed approach while maintaining accuracy and reliability in your assessment.`;
-
-    setGeneratedPrompt(engineeredPrompt);
-    setIsGenerating(false);
-    toast.success("Professional prompt generated successfully!");
+    try {
+      const res = await client.getSuggestions(userInput.trim());
+      if (res && res.suggestions) {
+        let suggestionsArr: string[] = [];
+        if (Array.isArray(res.suggestions)) {
+          suggestionsArr = res.suggestions;
+        } else if (typeof res.suggestions === "string") {
+          // Split by PROMPT X: or numbered list
+          suggestionsArr = res.suggestions
+            .split(/PROMPT \d+:|PROMPT\s+\d+:|\d+\./i)
+            .map(s => s.trim())
+            .filter(s => s.length > 0);
+        }
+        setSuggestions(suggestionsArr);
+        toast.success("Prompt suggestions generated successfully!");
+      } else {
+        toast.error("No suggestions received from server.");
+      }
+    } catch (err: any) {
+      toast.error("Failed to generate suggestions: " + (err.message || err));
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
-  const copyToClipboard = async () => {
+  const copyToClipboard = async (suggestion: string, idx: number) => {
     try {
-      await navigator.clipboard.writeText(generatedPrompt);
-      setCopied(true);
+      await navigator.clipboard.writeText(suggestion);
+      setCopiedIndex(idx);
       toast.success("Prompt copied to clipboard!");
-      setTimeout(() => setCopied(false), 2000);
+      setTimeout(() => setCopiedIndex(null), 2000);
     } catch (err) {
       toast.error("Failed to copy prompt");
     }
@@ -102,35 +105,39 @@ Format your response with clear sections and actionable insights. Use a professi
         </Button>
       </Card>
 
-      {generatedPrompt && (
+      {suggestions.length > 0 && (
         <Card className="p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <Label className="text-foreground font-medium">Generated Prompt</Label>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={copyToClipboard}
-              className="flex items-center gap-2"
-            >
-              {copied ? (
-                <>
-                  <CheckCircle className="h-4 w-4 text-success" />
-                  Copied!
-                </>
-              ) : (
-                <>
-                  <Copy className="h-4 w-4" />
-                  Copy
-                </>
-              )}
-            </Button>
-          </div>
-          
-          <div className="bg-secondary/50 p-4 rounded-lg">
-            <pre className="whitespace-pre-wrap text-sm text-foreground font-mono">
-              {generatedPrompt}
-            </pre>
-          </div>
+          <Label className="text-foreground font-medium mb-2 block">Generated Suggestions</Label>
+          {suggestions.map((suggestion, idx) => (
+            <div key={idx} className="mb-4 last:mb-0">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-semibold">Suggestion {idx + 1}</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => copyToClipboard(suggestion, idx)}
+                  className="flex items-center gap-2"
+                >
+                  {copiedIndex === idx ? (
+                    <>
+                      <CheckCircle className="h-4 w-4 text-success" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-4 w-4" />
+                      Copy
+                    </>
+                  )}
+                </Button>
+              </div>
+              <div className="bg-secondary/50 p-4 rounded-lg">
+                <pre className="whitespace-pre-wrap text-sm text-foreground font-mono">
+                  {suggestion}
+                </pre>
+              </div>
+            </div>
+          ))}
         </Card>
       )}
 
