@@ -3,7 +3,8 @@ import { Card } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
 import { Separator } from "../components/ui/seperator";
 import { Button } from "../components/ui/button";
-import { CheckCircle, XCircle, AlertTriangle, ExternalLink, Brain, User, ChevronDown, ChevronUp, DollarSign, Zap, Clock } from "lucide-react";
+import { CheckCircle, XCircle, AlertTriangle, ExternalLink, Brain, User, ChevronDown, ChevronUp, DollarSign, Zap, Clock, Newspaper } from "lucide-react";
+import { Card as UiCard } from "../components/ui/card";
 
 export interface PlagiarismCheck {
   percentage: number;
@@ -52,8 +53,21 @@ export const ChatMessage = ({ message, isLoading = false, complianceEnabled = tr
   const [isPlagiarismExpanded, setIsPlagiarismExpanded] = useState(false);
   const [isComplianceExpanded, setIsComplianceExpanded] = useState(false);
   
-  // If compliance failed, show simplified red box
-  const complianceFailed = message.complianceCheck?.status === 'failed';
+  // Try to parse the assistant's content as JSON
+  let parsed = null;
+  if (!isUser && message.content) {
+    try {
+      parsed = JSON.parse(message.content);
+    } catch {
+      parsed = null;
+    }
+  }
+
+  // Helper for compliance status color
+  const complianceColor = (status: string) =>
+    status === "PASSED" ? "text-green-600" :
+    status === "FAILED" ? "text-red-600" :
+    "text-yellow-600";
 
   return (
     <div className={`flex w-full gap-4 animate-slide-up ${isUser ? 'justify-end' : 'justify-start'}`}>
@@ -61,29 +75,26 @@ export const ChatMessage = ({ message, isLoading = false, complianceEnabled = tr
         <Card className={`shadow-card ${isUser ? 'bg-gradient-primary text-primary-foreground' : 'bg-card'}`}>
           {/* Message Header */}
           <div className="flex items-center gap-2 p-4 pb-2">
-            {isUser ? (
-              <User className="h-4 w-4" />
-            ) : (
-              <Brain className="h-4 w-4" />
-            )}
-            <span className="text-sm font-medium">
-              {isUser ? 'You' : 'AI Assistant'}
-            </span>
-            {message.model && !isUser && (
-              <Badge variant="secondary" className="text-xs">
-                {message.model}
-              </Badge>
+            {isUser ? <User className="h-4 w-4" /> : <Brain className="h-4 w-4" />}
+            <span className="text-sm font-medium">{isUser ? 'You' : 'Guidera Assistant'}</span>
+            {parsed && parsed.model_id && (
+              <Badge variant="secondary" className="text-xs">{parsed.model_id}</Badge>
             )}
           </div>
 
-          {/* Main Content - Most Prominent */}
-          {!complianceFailed && message.content && (
+          {/* Main Content */}
             <div className="px-4 pb-4">
-              <div className="text-base leading-relaxed whitespace-pre-wrap font-medium">
-                {message.content}
-              </div>
+            <div className="text-sm leading-relaxed whitespace-pre-wrap font-medium">
+              {/* Special case: policy violation error */}
+              {parsed && parsed.error && parsed.issues?.policy?.violation ? (
+                <div>{parsed.error}</div>
+              ) : parsed && parsed.response
+                ? parsed.response.split(/\r?\n/).map((line: string, idx: number) => <div key={idx}>{line}</div>)
+                : (typeof message.content === "string"
+                    ? message.content.split(/\r?\n/).map((line, idx) => <div key={idx}>{line}</div>)
+                    : message.content)}
             </div>
-          )}
+          </div>
 
           {/* Inline Loading Indicator */}
           {isLoading && !isUser && (
@@ -95,163 +106,114 @@ export const ChatMessage = ({ message, isLoading = false, complianceEnabled = tr
             </div>
           )}
 
-          {/* Performance Metrics - Visible for assistant responses */}
-          {message.performanceMetrics && !isUser && !complianceFailed && (
-            <div className="px-4 pb-4">
-              <div className="flex gap-4 text-xs">
-                {message.performanceMetrics.costSaved && (
-                  <div className="flex items-center gap-1 text-success">
-                    <DollarSign className="h-3 w-3" />
-                    <span>${message.performanceMetrics.costSaved} saved</span>
+          {/* Compliance Section - visually distinct */}
+          {parsed && ((parsed.compliance_report) || (parsed.error && parsed.issues?.policy?.violation)) && (
+            <UiCard className="bg-muted/10 border border-border/60 rounded-lg mx-4 mb-4 p-4">
+              {/* Compliance Report Dropdown */}
+              <details className="rounded border border-border/40 bg-background/60 mb-2 group" open={!!(parsed.error && parsed.issues?.policy?.violation)}>
+                <summary className="flex items-center gap-2 cursor-pointer py-2 px-3 font-medium select-none">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  <span>Compliance Details</span>
+                  {parsed && parsed.compliance_report && <span className="ml-2 px-2 py-1 rounded bg-green-600 text-white text-xs font-semibold align-middle">PASSED</span>}
+                  {parsed && parsed.error && parsed.issues?.policy?.violation && <span className="ml-2 px-2 py-1 rounded bg-red-600 text-white text-xs font-semibold align-middle">FAILED</span>}
+                  <span className="ml-auto">
+                    <ChevronDown className="h-4 w-4 group-open:hidden" />
+                    <ChevronUp className="h-4 w-4 hidden group-open:inline" />
+                  </span>
+                </summary>
+                <div className="p-3 space-y-3">
+                  {/* Special case: only show Content Guidelines for policy violation */}
+                  {parsed && parsed.error && parsed.issues?.policy?.violation ? (
+                    <div className="w-full p-3 rounded border bg-red-50 border-red-200 text-red-900">
+                      <div className="flex items-center gap-2 font-semibold mb-1">
+                        <XCircle className="h-4 w-4 text-red-600" />
+                        <span>Content Guidelines</span>
                   </div>
-                )}
-                {message.performanceMetrics.processingTime && (
-                  <div className="flex items-center gap-1 text-muted-foreground">
-                    <Clock className="h-3 w-3" />
-                    <span>{message.performanceMetrics.processingTime}ms</span>
+                      <div className="text-sm whitespace-pre-line">{parsed.issues.policy.details}</div>
                   </div>
-                )}
-                {message.performanceMetrics.efficiency && (
-                  <div className="flex items-center gap-1 text-primary">
-                    <Zap className="h-3 w-3" />
-                    <span>{message.performanceMetrics.efficiency}% efficiency</span>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="text-green-700 text-sm font-medium">No content policies violated</div>
+                      <div className="text-green-700 text-sm font-medium">Passed all content and safety filters</div>
+                      <div className="text-green-700 text-sm font-medium">No compliance flags triggered</div>
                   </div>
                 )}
               </div>
-            </div>
-          )}
-
-          {/* Compliance Failed - Simple Red Box */}
-          {complianceFailed && (
-            <div className="p-4">
-              <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 text-center">
-                <XCircle className="h-8 w-8 text-destructive mx-auto mb-2" />
-                <p className="text-destructive font-medium">Compliance Check Failed</p>
-                <p className="text-destructive/80 text-sm mt-1">Content violates compliance standards</p>
-              </div>
-            </div>
-          )}
-
-          {/* Collapsible Sections - Only show if compliance enabled and not failed */}
-          {complianceEnabled && !complianceFailed && !isUser && (message.plagiarismCheck || message.complianceCheck) && (
-            <div className="border-t border-border/50">
-              
-              {/* Plagiarism Section - Collapsible */}
-              {message.plagiarismCheck && (
-                <div>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-between p-4 h-auto bg-muted/20 hover:bg-muted/30 rounded-none"
-                    onClick={() => setIsPlagiarismExpanded(!isPlagiarismExpanded)}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Brain className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">Plagiarism Analysis</span>
-                      <Badge 
-                        variant={message.plagiarismCheck.percentage < 20 ? 'default' : 
-                               message.plagiarismCheck.percentage < 50 ? 'secondary' : 'destructive'}
-                        className="text-xs"
-                      >
-                        {message.plagiarismCheck.percentage}% Match
+              </details>
+              {/* Plagiarism Analysis Dropdown (only if not policy violation) */}
+              {parsed && parsed.compliance_report && !parsed.error && (
+                <details className="rounded border border-border/40 bg-background/60 group mb-2">
+                  <summary className="flex items-center gap-2 cursor-pointer py-2 px-3 font-medium select-none">
+                    <Newspaper className="h-5 w-5 text-blue-600" />
+                    <span>Plagiarism Analysis</span>
+                    {parsed.compliance_report.plagiarism && (
+                      <Badge variant="outline" className="ml-2">
+                        {parsed.compliance_report.plagiarism.chance || '0%'} Match
                       </Badge>
-                    </div>
-                    {isPlagiarismExpanded ? (
-                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4 text-muted-foreground opacity-60" />
                     )}
-                  </Button>
-                  
-                  {isPlagiarismExpanded && (
-                    <div className="p-4 bg-muted/10 animate-fade-in">
-                      {message.plagiarismCheck.sources.length > 0 ? (
-                        <div className="space-y-2">
-                          <p className="text-xs text-muted-foreground mb-3">Sources detected:</p>
-                          {message.plagiarismCheck.sources.map((source, index) => (
-                            <div key={index} className="p-3 rounded border border-border bg-background/50">
-                              <div className="flex items-start gap-2">
-                                <ExternalLink className="h-3 w-3 mt-0.5 text-muted-foreground" />
-                                <div className="flex-1">
-                                  <p className="text-xs font-medium">{source.title}</p>
-                                  <p className="text-xs text-muted-foreground mt-1">{source.url}</p>
-                                  <Badge variant="outline" className="text-xs mt-2">
-                                    {source.similarity}% similarity
-                                  </Badge>
-                                </div>
-                              </div>
+                    <span className="ml-auto">
+                      <ChevronDown className="h-4 w-4 group-open:hidden" />
+                      <ChevronUp className="h-4 w-4 hidden group-open:inline" />
+                    </span>
+                  </summary>
+                  {parsed.compliance_report.plagiarism && (
+                    <div className="p-3 space-y-3">
+                      {parsed.compliance_report.plagiarism.matched_urls?.length > 0 ? (
+                        <div className="w-full p-3 rounded border bg-gray-50 border-gray-200">
+                          <div className="font-semibold text-xs mb-2">Sources detected:</div>
+                          {parsed.compliance_report.plagiarism.matched_urls.map((url: string, idx: number) => (
+                            <div key={idx} className="mb-2 p-2 rounded border border-border/30 bg-white">
+                              <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline text-sm">
+                                {url}
+                              </a>
+                              {parsed.compliance_report.plagiarism.similarities && parsed.compliance_report.plagiarism.similarities[idx] && (
+                                <div className="inline-block mt-2 px-2 py-1 rounded bg-gray-200 text-xs font-semibold">{parsed.compliance_report.plagiarism.similarities[idx]} similarity</div>
+                              )}
                             </div>
                           ))}
                         </div>
-                      ) : (
-                        <p className="text-xs text-muted-foreground">No significant sources detected</p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Compliance Section - Collapsible for passed/warning */}
-              {message.complianceCheck && message.complianceCheck.status !== 'failed' && (
-                <div className="border-t border-border/50">
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-between p-4 h-auto bg-muted/20 hover:bg-muted/30 rounded-none"
-                    onClick={() => setIsComplianceExpanded(!isComplianceExpanded)}
-                  >
-                    <div className="flex items-center gap-2">
-                      {message.complianceCheck.status === 'passed' && (
-                        <CheckCircle className="h-4 w-4 text-success" />
-                      )}
-                      {message.complianceCheck.status === 'warning' && (
-                        <AlertTriangle className="h-4 w-4 text-warning" />
-                      )}
-                      <span className="text-sm">Compliance Details</span>
-                      <Badge 
-                        variant={message.complianceCheck.status === 'passed' ? 'default' : 'secondary'}
-                        className="text-xs"
-                      >
-                        {message.complianceCheck.status.toUpperCase()}
-                      </Badge>
-                    </div>
-                    {isComplianceExpanded ? (
-                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4 text-muted-foreground opacity-60" />
-                    )}
-                  </Button>
-                  
-                  {isComplianceExpanded && (
-                    <div className="p-4 bg-muted/10 animate-fade-in">
-                      <div className="space-y-2">
-                        {message.complianceCheck.details.map((detail, index) => (
-                          <div key={index} className={`p-2 rounded border ${
-                            detail.status === 'passed' ? 'border-success/20 bg-success/5' :
-                            detail.status === 'warning' ? 'border-warning/20 bg-warning/5' :
-                            'border-destructive/20 bg-destructive/5'
-                          }`}>
-                            <div className="flex items-start gap-2">
-                              {detail.status === 'passed' && <CheckCircle className="h-3 w-3 text-success mt-0.5" />}
-                              {detail.status === 'warning' && <AlertTriangle className="h-3 w-3 text-warning mt-0.5" />}
-                              {detail.status === 'failed' && <XCircle className="h-3 w-3 text-destructive mt-0.5" />}
-                              <div className="flex-1">
-                                <p className="text-xs font-medium">{detail.rule}</p>
-                                <p className="text-xs text-muted-foreground mt-1">{detail.description}</p>
-                              </div>
-                            </div>
+                      ) : null}
+                      {parsed.compliance_report.plagiarism?.elements?.length > 0 ? (
+                        <div className="w-full p-3 rounded border bg-gray-50 border-gray-200">
+                          <div className="font-semibold text-xs mb-2">Plagiarized Content:</div>
+                          <div className="text-xs text-muted-foreground bg-red-50 p-2 rounded">
+                            {Array.isArray(parsed.compliance_report.plagiarism.elements)
+                              ? parsed.compliance_report.plagiarism.elements.join(', ')
+                              : parsed.compliance_report.plagiarism.elements}
                           </div>
-                        ))}
-                      </div>
+                        </div>
+                      ) : null}
+                      {!(parsed.compliance_report.plagiarism.matched_urls?.length > 0) && !(parsed.compliance_report.plagiarism?.elements?.length > 0) && (
+                        <div className="text-xs text-muted-foreground">No plagiarism analysis details available.</div>
+                      )}
                     </div>
                   )}
-                </div>
+                </details>
               )}
-            </div>
+              {/* Cost Performance Analysis Section as dropdown */}
+              {parsed && parsed.cost_performance_message && (
+                <details className="rounded border border-border/40 bg-background/60 group mt-2">
+                  <summary className="flex items-center gap-2 cursor-pointer py-2 px-3 font-medium select-none">
+                    <DollarSign className="h-5 w-5 text-blue-700" />
+                    <span>Cost Performance Analysis</span>
+                    <span className="ml-auto">
+                      <ChevronDown className="h-4 w-4 group-open:hidden" />
+                      <ChevronUp className="h-4 w-4 hidden group-open:inline" />
+                    </span>
+                  </summary>
+                  <div className="p-3 text-sm text-blue-900 whitespace-pre-line">
+                    {parsed.cost_performance_message}
+                    </div>
+                </details>
+                    )}
+            </UiCard>
           )}
-        </Card>
-        
+
+          {/* Timestamp */}
         <p className="text-xs text-muted-foreground mt-1 px-1">
           {message.timestamp.toLocaleTimeString()}
         </p>
+        </Card>
       </div>
     </div>
   );

@@ -6,9 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Copy, Wand2, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 
-export const PromptGenerator = () => {
+export const PromptGenerator = ({ client }: { client: any }) => {
   const [userInput, setUserInput] = useState("");
-  const [generatedPrompt, setGeneratedPrompt] = useState("");
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -17,38 +17,27 @@ export const PromptGenerator = () => {
       toast.error("Please enter your requirements first");
       return;
     }
-
     setIsGenerating(true);
-    
-    // Simulate API call for prompt engineering
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    const engineeredPrompt = `You are a professional content compliance and plagiarism detection assistant. Your task is to analyze the following content: "${userInput.trim()}"
-
-Please provide a comprehensive analysis that includes:
-
-1. **Content Analysis**: Examine the text for originality, clarity, and structure
-2. **Plagiarism Detection**: Check for potential similarities with existing sources and provide similarity percentages
-3. **Compliance Verification**: Verify adherence to:
-   - Privacy regulations (PII detection)
-   - Content guidelines and community standards
-   - Copyright and intellectual property rights
-   - Professional ethical standards
-
-4. **Source Attribution**: If similarities are found, provide detailed source information including URLs and similarity percentages
-
-5. **Recommendations**: Suggest improvements for better compliance and originality
-
-Format your response with clear sections and actionable insights. Use a professional, detailed approach while maintaining accuracy and reliability in your assessment.`;
-
-    setGeneratedPrompt(engineeredPrompt);
-    setIsGenerating(false);
-    toast.success("Professional prompt generated successfully!");
+    setSuggestions([]);
+    try {
+      const res = await client.getSuggestions(userInput.trim());
+      if (res && res.length > 0) {
+        setSuggestions(res);
+        toast.success("Prompt suggestions generated successfully!");
+      } else {
+        setSuggestions([]);
+        toast.error("No suggestions received from server.");
+      }
+    } catch (err: any) {
+      toast.error("Failed to generate suggestions: " + (err.message || err));
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
-  const copyToClipboard = async () => {
+  const copyToClipboard = async (text: string) => {
     try {
-      await navigator.clipboard.writeText(generatedPrompt);
+      await navigator.clipboard.writeText(text);
       setCopied(true);
       toast.success("Prompt copied to clipboard!");
       setTimeout(() => setCopied(false), 2000);
@@ -102,35 +91,35 @@ Format your response with clear sections and actionable insights. Use a professi
         </Button>
       </Card>
 
-      {generatedPrompt && (
+      {suggestions.length > 0 && (
         <Card className="p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <Label className="text-foreground font-medium">Generated Prompt</Label>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={copyToClipboard}
-              className="flex items-center gap-2"
-            >
-              {copied ? (
-                <>
-                  <CheckCircle className="h-4 w-4 text-success" />
-                  Copied!
-                </>
-              ) : (
-                <>
-                  <Copy className="h-4 w-4" />
-                  Copy
-                </>
-              )}
-            </Button>
-          </div>
-          
-          <div className="bg-secondary/50 p-4 rounded-lg">
-            <pre className="whitespace-pre-wrap text-sm text-foreground font-mono">
-              {generatedPrompt}
-            </pre>
-          </div>
+          <Label className="text-foreground font-medium mb-2 block">Generated Suggestions</Label>
+          {suggestions.map((s, idx) => (
+            <div key={idx} className="mb-2">
+              <div className="font-bold mb-1">Suggestion {idx + 1}</div>
+              <div className="bg-secondary/50 p-4 rounded-lg flex items-center justify-between">
+                <pre className="whitespace-pre-wrap text-sm text-foreground font-mono flex-1 mr-2">{s}</pre>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => copyToClipboard(s)}
+                  className="flex items-center gap-2"
+                >
+                  {copied ? (
+                    <>
+                      <CheckCircle className="h-4 w-4 text-success" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-4 w-4" />
+                      Copy
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          ))}
         </Card>
       )}
 

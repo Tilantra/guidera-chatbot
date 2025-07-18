@@ -11,6 +11,7 @@ import { ThemeToggle } from "./ThemeToggle";
 import { LoadingIndicator } from "./LoggingIndicator";
 import { Shield, Brain, RotateCcw, Settings, MessageSquare, Wand2, Bot, BarChart3, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
+import GuideraLogo from '../components/assets/Guidera.png';
 
 // Mock API call - replace with your actual API endpoint
 const mockApiCall = async (message: string): Promise<Omit<ChatResponse, 'id' | 'type' | 'timestamp'>> => {
@@ -151,7 +152,7 @@ const mockApiCall = async (message: string): Promise<Omit<ChatResponse, 'id' | '
   return scenarios[scenarioIndex];
 };
 
-export const ComplianceChatBot = () => {
+export const ComplianceChatBot = ({ onGenerate, client }: { onGenerate?: (prompt: string, cpValue: number, complianceEnabled: boolean) => Promise<any>, client: any }) => {
   const [messages, setMessages] = useState<ChatResponse[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("chat");
@@ -258,15 +259,56 @@ export const ComplianceChatBot = () => {
     setLoadingMessageId(loadingMessageId);
 
     try {
-      // Call API
-      const response = await mockApiCall(messageContent);
-      
-      // Replace loading message with actual response
+      // Call API (use onGenerate if provided)
+      let response = onGenerate
+        ? await onGenerate(messageContent, cpValue, complianceEnabled)
+        : await mockApiCall(messageContent);
+
+      // If onGenerate, prettify the response
+      let content: string;
+      if (onGenerate && typeof response === 'string') {
+        // Remove status lines and parse JSON
+        const lines = response.split(/\r?\n/).filter(line => {
+          return !/^(Picking best model for you|Checking compliance and generating response|Running policy checks|Running compliance checks)/.test(line.trim());
+        });
+        const jsonLine = lines.find(line => line.trim().startsWith('{'));
+        if (jsonLine) {
+          try {
+            const parsed = JSON.parse(jsonLine);
+            // Remove 'ner' from compliance_report if present
+            if (parsed && typeof parsed === 'object' && 'compliance_report' in parsed) {
+              const cr = parsed['compliance_report'];
+              if (cr && typeof cr === 'object' && 'ner' in cr) {
+                delete cr['ner'];
+              }
+            }
+            content = JSON.stringify(parsed, null, 2);
+          } catch {
+            content = lines.join('\n');
+          }
+        } else {
+          content = lines.join('\n');
+        }
+      } else if (onGenerate) {
+        // If response is already an object
+        // Remove 'ner' from compliance_report if present
+        let parsed = response;
+        if (parsed && typeof parsed === 'object' && 'compliance_report' in parsed) {
+          const cr = parsed['compliance_report'];
+          if (cr && typeof cr === 'object' && 'ner' in cr) {
+            delete cr['ner'];
+          }
+        }
+        content = JSON.stringify(parsed, null, 2);
+      } else {
+        content = response.content || '';
+      }
+
       const assistantMessage: ChatResponse = {
         id: loadingMessageId,
         type: 'assistant',
         timestamp: new Date(),
-        ...response
+        content
       };
 
       setMessages(prev => prev.map(msg => 
@@ -335,17 +377,17 @@ export const ComplianceChatBot = () => {
               <MessageSquare className="h-4 w-4" />
               Chat
             </TabsTrigger>
-            <TabsTrigger value="dashboard" className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
-              Dashboard
+            <TabsTrigger value="prompt-generator" className="flex items-center gap-2">
+              <Wand2 className="h-4 w-4" />
+              Prompt Generator
             </TabsTrigger>
             <TabsTrigger value="policies" className="flex items-center gap-2">
               <ShieldCheck className="h-4 w-4" />
               Policies
             </TabsTrigger>
-            <TabsTrigger value="prompt-generator" className="flex items-center gap-2">
-              <Wand2 className="h-4 w-4" />
-              Prompt Generator
+            <TabsTrigger value="dashboard" className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Dashboard
             </TabsTrigger>
           </TabsList>
 
@@ -354,7 +396,7 @@ export const ComplianceChatBot = () => {
             <div className="flex-1 overflow-y-auto py-4 space-y-4">
               {messages.length === 0 ? (
                 <Card className="p-8 text-center shadow-card bg-card">
-                  <Bot className="h-12 w-12 mx-auto mb-4 text-primary" />
+                  <img src={GuideraLogo} alt="Guidera Logo" className="h-25 w-25 mx-auto mb-4 object-contain" />
                   <h3 className="text-lg font-semibold mb-2 text-foreground">Welcome to Guidera ChatBot</h3>
                   <p className="text-muted-foreground mb-6">
                     Send a message to analyze it for plagiarism and compliance violations. 
@@ -363,19 +405,25 @@ export const ComplianceChatBot = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                     <div className="p-3 rounded border border-border bg-secondary/50">
-                      <Shield className="h-5 w-5 text-primary mb-2" />
-                      <p className="font-medium text-foreground">Compliance Check</p>
-                      <p className="text-muted-foreground">Privacy, content guidelines, and policy validation</p>
+                      <p className="font-medium text-foreground flex items-center gap-2 justify-center text-center mb-2">
+                        <Shield className="h-5 w-5 text-primary" />
+                        Compliance Check
+                      </p>
+                      <p className="text-muted-foreground text-center">Privacy, content guidelines, and policy validation</p>
                     </div>
                     <div className="p-3 rounded border border-border bg-secondary/50">
-                      <Brain className="h-5 w-5 text-primary mb-2" />
-                      <p className="font-medium text-foreground">Plagiarism Detection</p>
-                      <p className="text-muted-foreground">Source identification and similarity analysis</p>
+                      <p className="font-medium text-foreground flex items-center gap-2 justify-center text-center mb-2">
+                        <Brain className="h-5 w-5 text-primary" />
+                        Plagiarism Detection
+                      </p>
+                      <p className="text-muted-foreground text-center">Source identification and similarity analysis</p>
                     </div>
                     <div className="p-3 rounded border border-border bg-secondary/50">
-                      <Settings className="h-5 w-5 text-primary mb-2" />
-                      <p className="font-medium text-foreground">AI Model Info</p>
-                      <p className="text-muted-foreground">Transparency in AI processing and analysis</p>
+                      <p className="font-medium text-foreground flex items-center gap-2 justify-center text-center mb-2">
+                        <Settings className="h-5 w-5 text-primary" />
+                        AI Model Info
+                      </p>
+                      <p className="text-muted-foreground text-center">Transparency in AI processing and analysis</p>
                     </div>
                   </div>
                 </Card>
@@ -404,19 +452,14 @@ export const ComplianceChatBot = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="dashboard" className="flex-1">
-            <AnalyticsDashboard 
-              data={analyticsData} 
-              isEmpty={messages.filter(m => m.type === 'assistant').length === 0} 
-            />
+          <TabsContent value="prompt-generator" className="flex-1 flex flex-col">
+            <PromptGenerator client={client} />
           </TabsContent>
-
-          <TabsContent value="policies" className="flex-1">
-            <CompliancePolicyManager complianceEnabled={complianceEnabled} />
+          <TabsContent value="policies" className="flex flex-col h-full">
+            <CompliancePolicyManager client={client} isActive={activeTab === "policies"} />
           </TabsContent>
-
-          <TabsContent value="prompt-generator" className="flex-1">
-            <PromptGenerator />
+          <TabsContent value="dashboard" className="flex-1 flex flex-col">
+            <AnalyticsDashboard client={client} />
           </TabsContent>
         </Tabs>
       </div>
