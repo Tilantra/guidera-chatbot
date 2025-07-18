@@ -11,7 +11,7 @@ const client = new BrowserGuideraClient();
 
 export const PromptGenerator = () => {
   const [userInput, setUserInput] = useState("");
-  const [suggestion, setSuggestion] = useState<string>("");
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -21,26 +21,26 @@ export const PromptGenerator = () => {
       return;
     }
     setIsGenerating(true);
-    setSuggestion("");
+    setSuggestions([]);
     try {
       const res = await client.getSuggestions(userInput.trim());
-      if (res) {
-        // Show the entire raw JSON response as a string
-        setSuggestion(typeof res === 'string' ? res : JSON.stringify(res, null, 2));
-        toast.success("Prompt suggestion generated successfully!");
+      if (res && res.length > 0) {
+        setSuggestions(res);
+        toast.success("Prompt suggestions generated successfully!");
       } else {
-        toast.error("No suggestion received from server.");
+        setSuggestions([]);
+        toast.error("No suggestions received from server.");
       }
     } catch (err: any) {
-      toast.error("Failed to generate suggestion: " + (err.message || err));
+      toast.error("Failed to generate suggestions: " + (err.message || err));
     } finally {
       setIsGenerating(false);
     }
   };
 
-  const copyToClipboard = async () => {
+  const copyToClipboard = async (text: string) => {
     try {
-      await navigator.clipboard.writeText(suggestion);
+      await navigator.clipboard.writeText(text);
       setCopied(true);
       toast.success("Prompt copied to clipboard!");
       setTimeout(() => setCopied(false), 2000);
@@ -94,34 +94,35 @@ export const PromptGenerator = () => {
         </Button>
       </Card>
 
-      {suggestion && (
+      {suggestions.length > 0 && (
         <Card className="p-6 space-y-4">
-          <Label className="text-foreground font-medium mb-2 block">Generated Suggestion</Label>
-          <div className="flex items-center justify-between mb-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={copyToClipboard}
-              className="flex items-center gap-2"
-            >
-              {copied ? (
-                <>
-                  <CheckCircle className="h-4 w-4 text-success" />
-                  Copied!
-                </>
-              ) : (
-                <>
-                  <Copy className="h-4 w-4" />
-                  Copy
-                </>
-              )}
-            </Button>
-          </div>
-          <div className="bg-secondary/50 p-4 rounded-lg">
-            <pre className="whitespace-pre-wrap text-sm text-foreground font-mono">
-              {suggestion}
-            </pre>
-          </div>
+          <Label className="text-foreground font-medium mb-2 block">Generated Suggestions</Label>
+          {suggestions.map((s, idx) => (
+            <div key={idx} className="mb-2">
+              <div className="font-bold mb-1">Suggestion {idx + 1}</div>
+              <div className="bg-secondary/50 p-4 rounded-lg flex items-center justify-between">
+                <pre className="whitespace-pre-wrap text-sm text-foreground font-mono flex-1 mr-2">{s}</pre>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => copyToClipboard(s)}
+                  className="flex items-center gap-2"
+                >
+                  {copied ? (
+                    <>
+                      <CheckCircle className="h-4 w-4 text-success" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-4 w-4" />
+                      Copy
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          ))}
         </Card>
       )}
 
