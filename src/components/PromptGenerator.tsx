@@ -5,10 +5,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Copy, Wand2, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
+import { BrowserGuideraClient } from "../lib/guidera-browser-client";
+
+const client = new BrowserGuideraClient();
 
 export const PromptGenerator = () => {
   const [userInput, setUserInput] = useState("");
-  const [generatedPrompt, setGeneratedPrompt] = useState("");
+  const [suggestion, setSuggestion] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -17,38 +20,27 @@ export const PromptGenerator = () => {
       toast.error("Please enter your requirements first");
       return;
     }
-
     setIsGenerating(true);
-    
-    // Simulate API call for prompt engineering
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    const engineeredPrompt = `You are a professional content compliance and plagiarism detection assistant. Your task is to analyze the following content: "${userInput.trim()}"
-
-Please provide a comprehensive analysis that includes:
-
-1. **Content Analysis**: Examine the text for originality, clarity, and structure
-2. **Plagiarism Detection**: Check for potential similarities with existing sources and provide similarity percentages
-3. **Compliance Verification**: Verify adherence to:
-   - Privacy regulations (PII detection)
-   - Content guidelines and community standards
-   - Copyright and intellectual property rights
-   - Professional ethical standards
-
-4. **Source Attribution**: If similarities are found, provide detailed source information including URLs and similarity percentages
-
-5. **Recommendations**: Suggest improvements for better compliance and originality
-
-Format your response with clear sections and actionable insights. Use a professional, detailed approach while maintaining accuracy and reliability in your assessment.`;
-
-    setGeneratedPrompt(engineeredPrompt);
-    setIsGenerating(false);
-    toast.success("Professional prompt generated successfully!");
+    setSuggestion("");
+    try {
+      const res = await client.getSuggestions(userInput.trim());
+      if (res) {
+        // Show the entire raw JSON response as a string
+        setSuggestion(typeof res === 'string' ? res : JSON.stringify(res, null, 2));
+        toast.success("Prompt suggestion generated successfully!");
+      } else {
+        toast.error("No suggestion received from server.");
+      }
+    } catch (err: any) {
+      toast.error("Failed to generate suggestion: " + (err.message || err));
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const copyToClipboard = async () => {
     try {
-      await navigator.clipboard.writeText(generatedPrompt);
+      await navigator.clipboard.writeText(suggestion);
       setCopied(true);
       toast.success("Prompt copied to clipboard!");
       setTimeout(() => setCopied(false), 2000);
@@ -102,10 +94,10 @@ Format your response with clear sections and actionable insights. Use a professi
         </Button>
       </Card>
 
-      {generatedPrompt && (
+      {suggestion && (
         <Card className="p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <Label className="text-foreground font-medium">Generated Prompt</Label>
+          <Label className="text-foreground font-medium mb-2 block">Generated Suggestion</Label>
+          <div className="flex items-center justify-between mb-2">
             <Button
               variant="outline"
               size="sm"
@@ -125,10 +117,9 @@ Format your response with clear sections and actionable insights. Use a professi
               )}
             </Button>
           </div>
-          
           <div className="bg-secondary/50 p-4 rounded-lg">
             <pre className="whitespace-pre-wrap text-sm text-foreground font-mono">
-              {generatedPrompt}
+              {suggestion}
             </pre>
           </div>
         </Card>
