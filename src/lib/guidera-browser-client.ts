@@ -113,6 +113,91 @@ export class BrowserGuideraClient {
     }
   }
 
+  async addPolicy(policyType: string, description: string): Promise<any> {
+    if (!this.tokenValid()) {
+      throw new Error('Not authenticated');
+    }
+    // Accept 'Input'/'Output' and convert to lowercase
+    const policy_type = policyType.toLowerCase();
+    const url = `${this.apiBaseUrl}/users/add_policy`;
+    const headers = {
+      Authorization: `Bearer ${this.authToken}`,
+      'Content-Type': 'application/json',
+    };
+    const payload = { policy_type, description };
+    const response = await axios.post(url, payload, { headers });
+    if (response.status === 200) {
+      return response.data;
+    } else if (response.status === 401) {
+      this.clearJwt();
+      throw new Error('Session expired or invalid. Please log in again.');
+    } else {
+      throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
+    }
+  }
+
+  async removePolicy(policyType: string, description: string): Promise<any> {
+    if (!this.tokenValid()) {
+      throw new Error('Not authenticated');
+    }
+    const policy_type = policyType.toLowerCase();
+    const url = `${this.apiBaseUrl}/users/remove_policy`;
+    const headers = {
+      Authorization: `Bearer ${this.authToken}`,
+      'Content-Type': 'application/json',
+    };
+    const payload = { policy_type, description };
+    const response = await axios.post(url, payload, { headers });
+    if (response.status === 200) {
+      return response.data;
+    } else if (response.status === 401) {
+      this.clearJwt();
+      throw new Error('Session expired or invalid. Please log in again.');
+    } else {
+      throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
+    }
+  }
+
+  async getAnalytics(): Promise<any> {
+    if (!this.tokenValid()) {
+      throw new Error('Not authenticated');
+    }
+    const url = `${this.apiBaseUrl}/users/analytics`;
+    const headers = {
+      Authorization: `Bearer ${this.authToken}`,
+      'Content-Type': 'application/json',
+    };
+    const response = await axios.get(url, { headers });
+    if (response.status === 200) {
+      return response.data;
+    } else if (response.status === 401) {
+      this.clearJwt();
+      throw new Error('Session expired or invalid. Please log in again.');
+    } else {
+      throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
+    }
+  }
+
+  async getPolicies(): Promise<{ input_policies: string[]; output_policies: string[] }> {
+    if (!this.tokenValid()) {
+      throw new Error('Not authenticated');
+    }
+    const url = `${this.apiBaseUrl}/users/get_policies`;
+    const headers = {
+      Authorization: `Bearer ${this.authToken}`,
+      'Content-Type': 'application/json',
+    };
+    const response = await axios.get(url, { headers });
+    if (response.status === 200) {
+      return response.data;
+    } else if (response.status === 401) {
+      this.clearJwt();
+      throw new Error('Session expired or invalid. Please log in again.');
+    } else {
+      throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
+    }
+  }
+
   logout() {
     this.clearJwt();
   }

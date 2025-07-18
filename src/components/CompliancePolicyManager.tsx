@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,32 +12,17 @@ interface CompliancePolicy {
   id: string;
   name: string;
   description: string;
-  type?: string;
+  type: string;
 }
 
 interface CompliancePolicyManagerProps {
   complianceEnabled?: boolean;
+  client: any;
+  isActive?: boolean; // <-- add this
 }
 
-export const CompliancePolicyManager = ({ complianceEnabled = true }: CompliancePolicyManagerProps) => {
-  const [policies, setPolicies] = useState<CompliancePolicy[]>([
-    {
-      id: '1',
-      name: 'Social Security Number',
-      description: 'Detects US Social Security Numbers in XXX-XX-XXXX format'
-    },
-    {
-      id: '2',
-      name: 'Email Addresses',
-      description: 'Identifies email addresses in content'
-    },
-    {
-      id: '3',
-      name: 'Sensitive Keywords',
-      description: 'Flags content containing sensitive terms'
-    }
-  ]);
-
+export const CompliancePolicyManager = ({ complianceEnabled = true, client, isActive }: CompliancePolicyManagerProps) => {
+  const [policies, setPolicies] = useState<CompliancePolicy[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newPolicy, setNewPolicy] = useState<Partial<CompliancePolicy>>({
     name: '',
@@ -45,33 +30,68 @@ export const CompliancePolicyManager = ({ complianceEnabled = true }: Compliance
     type: '',
   });
 
-  const handleAddPolicy = () => {
+  // Fetch policies from backend using client
+  const fetchPolicies = async () => {
+    try {
+      const data = await client.getPolicies();
+      console.log('Fetched policies:', data); // DEBUG
+      // Map input and output policies to unified array
+      const inputPolicies = (data.input_policies || []).map((desc: string, idx: number) => ({
+        id: `input-${idx}`,
+        name: 'Input Policy',
+        description: desc,
+        type: 'input',
+      }));
+      const outputPolicies = (data.output_policies || []).map((desc: string, idx: number) => ({
+        id: `output-${idx}`,
+        name: 'Output Policy',
+        description: desc,
+        type: 'output',
+      }));
+      const allPolicies = [...inputPolicies, ...outputPolicies];
+      console.log('Mapped policies:', allPolicies); // DEBUG
+      setPolicies(allPolicies);
+    } catch (err) {
+      setPolicies([]);
+    }
+  };
+
+  useEffect(() => {
+    if (isActive) {
+      fetchPolicies();
+    }
+  }, [isActive]);
+
+  const handleAddPolicy = async () => {
     if (!newPolicy.name || !newPolicy.description || !newPolicy.type) {
       toast.error("Please fill in all required fields");
       return;
     }
+    try {
+      await client.addPolicy(newPolicy.type, newPolicy.description);
+      setNewPolicy({ name: '', description: '', type: '' });
+      setIsAddDialogOpen(false);
+      toast.success("Policy added successfully");
+      fetchPolicies();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to add policy");
+    }
+  };
 
-    const policy: CompliancePolicy = {
-      id: Date.now().toString(),
-      name: newPolicy.name,
-      description: newPolicy.description,
-      type: newPolicy.type || 'input',
-    };
-
-    setPolicies(prev => [...prev, policy]);
-    setNewPolicy({
-      name: '',
-      description: '',
-      type: '',
-    });
-    setIsAddDialogOpen(false);
-    toast.success("Policy added successfully");
+  const handleDeletePolicy = async (policy: CompliancePolicy) => {
+    try {
+      await client.removePolicy(policy.type, policy.description);
+      toast.success("Policy removed successfully");
+      fetchPolicies();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to remove policy");
+    }
   };
 
   return (
-    <div className="flex-1 overflow-y-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="flex-1 overflow-y-auto p-6">
+      {/* Header - always at the top */}
+      <div className="flex items-start justify-between mb-8">
         <div>
           <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <Shield className="h-6 w-6 text-primary" />
@@ -81,7 +101,6 @@ export const CompliancePolicyManager = ({ complianceEnabled = true }: Compliance
             Configure and manage compliance policies for content analysis
           </p>
         </div>
-        
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2">
@@ -96,7 +115,6 @@ export const CompliancePolicyManager = ({ complianceEnabled = true }: Compliance
                 Create a new policy for content analysis.
               </DialogDescription>
             </DialogHeader>
-            
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Policy Name *</Label>
@@ -104,7 +122,7 @@ export const CompliancePolicyManager = ({ complianceEnabled = true }: Compliance
                   id="name"
                   placeholder="e.g., Phone Numbers"
                   value={newPolicy.name || ''}
-                  onChange={(e) => setNewPolicy(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={e => setNewPolicy(prev => ({ ...prev, name: e.target.value }))}
                 />
                 <div className="mb-6"></div>
                 <Label htmlFor="type">Type *</Label>
@@ -125,19 +143,17 @@ export const CompliancePolicyManager = ({ complianceEnabled = true }: Compliance
                   </span>
                 </div>
               </div>
-              
               <div className="space-y-2">
                 <Label htmlFor="description">Description *</Label>
                 <Textarea
                   id="description"
                   placeholder="Brief description of what this policy detects"
                   value={newPolicy.description || ''}
-                  onChange={(e) => setNewPolicy(prev => ({ ...prev, description: e.target.value }))}
+                  onChange={e => setNewPolicy(prev => ({ ...prev, description: e.target.value }))}
                   rows={3}
                 />
               </div>
             </div>
-            
             <div className="flex justify-end gap-2 pt-4">
               <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
                 Cancel
@@ -149,21 +165,18 @@ export const CompliancePolicyManager = ({ complianceEnabled = true }: Compliance
           </DialogContent>
         </Dialog>
       </div>
-
       {/* Policies List */}
       <div className="grid grid-cols-1 gap-4">
+        {policies.length === 0 && (
+          <div className="text-muted-foreground text-center py-8">No policies found.</div>
+        )}
         {policies.map((policy) => (
           <Card key={policy.id} className="shadow-card bg-card">
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className="font-semibold text-foreground">{policy.name}</h3>
-                    {policy.type && (
-                      <span className={`px-2 py-0.5 rounded text-xs font-semibold ${policy.type === 'input' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
-                        {policy.type.charAt(0).toUpperCase() + policy.type.slice(1)}
-                      </span>
-                    )}
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className={`px-2 py-0.5 rounded text-xs font-semibold ${policy.type === 'input' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>{policy.type.charAt(0).toUpperCase() + policy.type.slice(1)}</span>
                   </div>
                   <p className="text-sm text-muted-foreground">{policy.description}</p>
                 </div>
@@ -171,7 +184,7 @@ export const CompliancePolicyManager = ({ complianceEnabled = true }: Compliance
                   variant="ghost"
                   size="icon"
                   className="ml-4 text-destructive hover:bg-destructive/10"
-                  onClick={() => setPolicies(prev => prev.filter(p => p.id !== policy.id))}
+                  onClick={() => handleDeletePolicy(policy)}
                   aria-label="Delete policy"
                 >
                   <Trash className="h-5 w-5" />

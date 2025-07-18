@@ -67,7 +67,7 @@ export default function Index() {
     return <LoginForm onLogin={handleLogin} error={loginError} />;
   }
 
-  // Pass a generate function to the chatbot
+  // Pass a generate function and the client to the chatbot
   const handleGenerate = async (prompt, cpValue, complianceEnabled) => {
     try {
       const result = await client.generate(prompt, {}, cpValue, complianceEnabled);
@@ -77,5 +77,5 @@ export default function Index() {
     }
   };
 
-  return <ComplianceChatBot onGenerate={handleGenerate} />;
+  return <ComplianceChatBot onGenerate={handleGenerate} client={client} />;
 }

@@ -152,7 +152,7 @@ const mockApiCall = async (message: string): Promise<Omit<ChatResponse, 'id' | '
   return scenarios[scenarioIndex];
 };
 
-export const ComplianceChatBot = ({ onGenerate }: { onGenerate?: (prompt: string, cpValue: number, complianceEnabled: boolean) => Promise<any> }) => {
+export const ComplianceChatBot = ({ onGenerate, client }: { onGenerate?: (prompt: string, cpValue: number, complianceEnabled: boolean) => Promise<any>, client: any }) => {
   const [messages, setMessages] = useState<ChatResponse[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("chat");
@@ -377,17 +377,17 @@ export const ComplianceChatBot = ({ onGenerate }: { onGenerate?: (prompt: string
               <MessageSquare className="h-4 w-4" />
               Chat
             </TabsTrigger>
-            <TabsTrigger value="dashboard" className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
-              Dashboard
+            <TabsTrigger value="prompt-generator" className="flex items-center gap-2">
+              <Wand2 className="h-4 w-4" />
+              Prompt Generator
             </TabsTrigger>
             <TabsTrigger value="policies" className="flex items-center gap-2">
               <ShieldCheck className="h-4 w-4" />
               Policies
             </TabsTrigger>
-            <TabsTrigger value="prompt-generator" className="flex items-center gap-2">
-              <Wand2 className="h-4 w-4" />
-              Prompt Generator
+            <TabsTrigger value="dashboard" className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Dashboard
             </TabsTrigger>
           </TabsList>
 
@@ -452,19 +452,14 @@ export const ComplianceChatBot = ({ onGenerate }: { onGenerate?: (prompt: string
             </div>
           </TabsContent>
 
-          <TabsContent value="dashboard" className="flex-1">
-            <AnalyticsDashboard 
-              data={analyticsData} 
-              isEmpty={messages.filter(m => m.type === 'assistant').length === 0} 
-            />
+          <TabsContent value="prompt-generator" className="flex-1 flex flex-col">
+            <PromptGenerator client={client} />
           </TabsContent>
-
-          <TabsContent value="policies" className="flex-1">
-            <CompliancePolicyManager complianceEnabled={complianceEnabled} />
+          <TabsContent value="policies" className="flex flex-col h-full">
+            <CompliancePolicyManager client={client} isActive={activeTab === "policies"} />
           </TabsContent>
-
-          <TabsContent value="prompt-generator" className="flex-1">
-            <PromptGenerator />
+          <TabsContent value="dashboard" className="flex-1 flex flex-col">
+            <AnalyticsDashboard client={client} />
           </TabsContent>
         </Tabs>
       </div>

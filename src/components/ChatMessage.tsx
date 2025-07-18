@@ -52,7 +52,7 @@ export const ChatMessage = ({ message, isLoading = false, complianceEnabled = tr
   const isUser = message.type === 'user';
   const [isPlagiarismExpanded, setIsPlagiarismExpanded] = useState(false);
   const [isComplianceExpanded, setIsComplianceExpanded] = useState(false);
-
+  
   // Try to parse the assistant's content as JSON
   let parsed = null;
   if (!isUser && message.content) {
@@ -83,7 +83,7 @@ export const ChatMessage = ({ message, isLoading = false, complianceEnabled = tr
           </div>
 
           {/* Main Content */}
-          <div className="px-4 pb-4">
+            <div className="px-4 pb-4">
             <div className="text-sm leading-relaxed whitespace-pre-wrap font-medium">
               {/* Special case: policy violation error */}
               {parsed && parsed.error && parsed.issues?.policy?.violation ? (
@@ -128,17 +128,17 @@ export const ChatMessage = ({ message, isLoading = false, complianceEnabled = tr
                       <div className="flex items-center gap-2 font-semibold mb-1">
                         <XCircle className="h-4 w-4 text-red-600" />
                         <span>Content Guidelines</span>
-                      </div>
+                  </div>
                       <div className="text-sm whitespace-pre-line">{parsed.issues.policy.details}</div>
-                    </div>
+                  </div>
                   ) : (
                     <div className="space-y-2">
                       <div className="text-green-700 text-sm font-medium">No content policies violated</div>
                       <div className="text-green-700 text-sm font-medium">Passed all content and safety filters</div>
                       <div className="text-green-700 text-sm font-medium">No compliance flags triggered</div>
-                    </div>
-                  )}
-                </div>
+                  </div>
+                )}
+              </div>
               </details>
               {/* Plagiarism Analysis Dropdown (only if not policy violation) */}
               {parsed && parsed.compliance_report && !parsed.error && (
@@ -203,16 +203,16 @@ export const ChatMessage = ({ message, isLoading = false, complianceEnabled = tr
                   </summary>
                   <div className="p-3 text-sm text-blue-900 whitespace-pre-line">
                     {parsed.cost_performance_message}
-                  </div>
+                    </div>
                 </details>
-              )}
+                    )}
             </UiCard>
           )}
 
           {/* Timestamp */}
-          <p className="text-xs text-muted-foreground mt-1 px-1">
-            {message.timestamp.toLocaleTimeString()}
-          </p>
+        <p className="text-xs text-muted-foreground mt-1 px-1">
+          {message.timestamp.toLocaleTimeString()}
+        </p>
         </Card>
       </div>
     </div>

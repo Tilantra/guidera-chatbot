@@ -5,11 +5,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Copy, Wand2, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
-import { BrowserGuideraClient } from "../lib/guidera-browser-client";
 
-const client = new BrowserGuideraClient();
-
-export const PromptGenerator = () => {
+export const PromptGenerator = ({ client }: { client: any }) => {
   const [userInput, setUserInput] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
