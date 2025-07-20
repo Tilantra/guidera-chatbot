@@ -145,8 +145,19 @@ export const ChatMessage = ({ message, isLoading = false, complianceEnabled = tr
             <div className="px-4 pb-4">
             <div className="text-sm leading-relaxed whitespace-pre-wrap font-medium">
               {/* Special case: policy violation error */}
-              {parsed && parsed.error && parsed.issues?.policy?.violation ? (
-                <div>{parsed.error}</div>
+              {(
+                (parsed && parsed.error && parsed.issues?.policy?.violation) ||
+                (parsed && parsed.compliance_report?.policy?.violation)
+              ) ? (
+                <div>{
+                  parsed && parsed.error && parsed.issues?.policy?.violation
+                    ? parsed.error
+                    : parsed && parsed.error && parsed.compliance_report?.policy?.violation
+                      ? parsed.error
+                      : parsed && parsed.compliance_report?.policy?.violation
+                        ? parsed.error || "Content violates policy."
+                        : null
+                }</div>
               ) : parsed && parsed.response
                 ? <div dangerouslySetInnerHTML={{ __html: formatMarkdown(parsed.response) }} />
                 : (typeof message.content === "string"
@@ -188,14 +199,23 @@ export const ChatMessage = ({ message, isLoading = false, complianceEnabled = tr
                 </summary>
                 <div className="p-3 space-y-3">
                   {/* Special case: only show Content Guidelines for policy violation */}
-                  {parsed && parsed.error && parsed.issues?.policy?.violation ? (
+                  {(
+                    (parsed && parsed.error && parsed.issues?.policy?.violation) ||
+                    (parsed && parsed.compliance_report?.policy?.violation)
+                  ) ? (
                     <div className="w-full p-3 rounded border bg-red-50 border-red-200 text-red-900">
                       <div className="flex items-center gap-2 font-semibold mb-1">
                         <XCircle className="h-4 w-4 text-red-600" />
                         <span>Content Guidelines</span>
-                  </div>
-                      <div className="text-sm whitespace-pre-line">{parsed.issues.policy.details}</div>
-                  </div>
+                      </div>
+                      <div className="text-sm whitespace-pre-line">{
+                        parsed && parsed.error && parsed.issues?.policy?.violation
+                          ? parsed.issues.policy.details
+                          : parsed && parsed.compliance_report?.policy?.violation
+                            ? parsed.compliance_report.policy.details
+                            : null
+                      }</div>
+                    </div>
                   ) : (
                     <div className="space-y-2">
                       <div className="text-green-700 text-sm font-medium">No content policies violated</div>
