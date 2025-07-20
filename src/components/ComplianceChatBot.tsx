@@ -152,11 +152,12 @@ const mockApiCall = async (message: string): Promise<Omit<ChatResponse, 'id' | '
   return scenarios[scenarioIndex];
 };
 
-export const ComplianceChatBot = ({ onGenerate, client }: { onGenerate?: (prompt: string, cpValue: number, complianceEnabled: boolean) => Promise<any>, client: any }) => {
+export const ComplianceChatBot = ({ onGenerate, client }: { onGenerate?: (prompt: string, cpValue: number, complianceEnabled: boolean, redactionEnabled: boolean) => Promise<any>, client: any }) => {
   const [messages, setMessages] = useState<ChatResponse[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("chat");
   const [complianceEnabled, setComplianceEnabled] = useState(true);
+  const [redactionEnabled, setRedactionEnabled] = useState(false);
   const [cpValue, setCpValue] = useState(0.5);
   const [loadingMessageId, setLoadingMessageId] = useState<string | null>(null);
 
@@ -261,7 +262,7 @@ export const ComplianceChatBot = ({ onGenerate, client }: { onGenerate?: (prompt
     try {
       // Call API (use onGenerate if provided)
       let response = onGenerate
-        ? await onGenerate(messageContent, cpValue, complianceEnabled)
+        ? await onGenerate(messageContent, cpValue, complianceEnabled, redactionEnabled)
         : await mockApiCall(messageContent);
 
       // If onGenerate, prettify the response
@@ -372,7 +373,7 @@ export const ComplianceChatBot = ({ onGenerate, client }: { onGenerate?: (prompt
       {/* Main Content with Tabs */}
       <div className="flex-1 px-4">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-4 sticky top-0 z-20 bg-background/95 border-b border-border shadow-sm">
             <TabsTrigger value="chat" className="flex items-center gap-2">
               <MessageSquare className="h-4 w-4" />
               Chat
@@ -440,7 +441,7 @@ export const ComplianceChatBot = ({ onGenerate, client }: { onGenerate?: (prompt
             </div>
 
             {/* Chat Input */}
-            <div className="py-4">
+            <div className="py-4 sticky bottom-0 z-20 bg-background/95 border-t border-border shadow-sm">
               <ChatInput 
                 onSendMessage={handleSendMessage}
                 isLoading={isLoading}
@@ -448,6 +449,8 @@ export const ComplianceChatBot = ({ onGenerate, client }: { onGenerate?: (prompt
                 onComplianceToggle={setComplianceEnabled}
                 cpValue={cpValue}
                 onCpChange={setCpValue}
+                redactionEnabled={redactionEnabled}
+                onRedactionToggle={setRedactionEnabled}
               />
             </div>
           </TabsContent>

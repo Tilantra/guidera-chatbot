@@ -54,7 +54,8 @@ export class BrowserGuideraClient {
     prompt: string,
     prefs: Record<string, any> = {},
     cpTradeoffParameter: number = 0.7,
-    complianceEnabled: boolean = true
+    complianceEnabled: boolean = true,
+    redactionEnabled: boolean = false
   ): Promise<any> {
     if (!this.tokenValid()) {
       throw new Error('Not authenticated');
@@ -69,6 +70,7 @@ export class BrowserGuideraClient {
       prefs,
       cp_tradeoff_parameter: cpTradeoffParameter,
       compliance_enabled: complianceEnabled,
+      redaction_enabled: redactionEnabled,
     };
     const response = await axios.post(generateUrl, requestData, { headers });
     if (response.status === 200) {
@@ -95,16 +97,7 @@ export class BrowserGuideraClient {
     if (response.status === 200) {
       const data = response.data;
       const suggestions: string[] = data.suggestions || [];
-      // Filter out meta suggestion lines
-      const filtered = suggestions.filter(s =>
-        !s.trim().startsWith('Here are three diverse, high-quality prompts') &&
-        !s.trim().startsWith('Here are three high-quality, diverse prompts')
-      );
-      if (filtered.length > 0) {
-        return filtered;
-      } else {
-        return [];
-      }
+      return suggestions;
     } else if (response.status === 401) {
       this.clearJwt();
       throw new Error('Session expired or invalid. Please log in again.');

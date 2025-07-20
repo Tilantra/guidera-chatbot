@@ -3,6 +3,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Table, TableHeader, TableBody, TableRow, TableHead } from "@/components/ui/table";
 import { DollarSign, Shield, AlertTriangle, Brain, BarChart3, Info, TrendingUp } from "lucide-react";
+import { RotateCcw, Loader2 } from "lucide-react";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { LineChart, Line, CartesianGrid } from "recharts";
 
@@ -15,18 +16,22 @@ export const AnalyticsDashboard = ({ client }: { client: any }) => {
   const [lastUpdated, setLastUpdated] = useState<string>("");
 
   useEffect(() => {
-    (async () => {
-      try {
-        const result = await client.getAnalytics();
-        setAnalytics(result);
-        setLastUpdated(new Date().toLocaleString());
-      } catch (err: any) {
-        setError(err.message || "Failed to fetch analytics");
-      } finally {
-        setLoading(false);
-      }
-    })();
+    fetchAnalytics();
   }, [client]);
+
+  const fetchAnalytics = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const result = await client.getAnalytics();
+      setAnalytics(result);
+      setLastUpdated(new Date().toLocaleString());
+    } catch (err: any) {
+      setError(err.message || "Failed to fetch analytics");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (loading) {
     return <div className="flex-1 flex items-center justify-center p-8 text-muted-foreground">Loading analytics...</div>;
@@ -73,7 +78,12 @@ export const AnalyticsDashboard = ({ client }: { client: any }) => {
   // Pie chart data for cost savings
   const pieData = [
     { name: "Cost Saved", value: analytics.percent_cost_saved || 0 },
-    { name: "Remaining", value: 100 - (analytics.percent_cost_saved || 0) }
+    { name: "Actual cost", value: 100 - (analytics.percent_cost_saved || 0) }
+  ];
+
+  // Inner donut data for 'Cost without guidera' (always 100%)
+  const innerPieData = [
+    { name: "Cost without Guidera", value: 100 }
   ];
 
   // Bar chart data for model usage
@@ -123,7 +133,18 @@ export const AnalyticsDashboard = ({ client }: { client: any }) => {
             <span>All metrics are updated in real-time. <span className="hidden md:inline">Hover on charts for details.</span></span>
           </CardDescription>
         </div>
-        <div className="text-xs text-muted-foreground mt-2 md:mt-0">Last updated: {lastUpdated}</div>
+        <div className="flex items-center gap-3 mt-2 md:mt-0">
+          <span className="text-xs text-muted-foreground">Last updated: {lastUpdated}</span>
+          <button
+            className="inline-flex items-center gap-1 px-2 py-1 rounded border border-border bg-background hover:bg-secondary transition-colors text-xs font-medium disabled:opacity-60"
+            onClick={fetchAnalytics}
+            disabled={loading}
+            title="Refresh analytics"
+          >
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
+            Refresh
+          </button>
+        </div>
       </CardHeader>
       <CardContent className="pt-6 pb-2">
         {/* Metrics Grid */}
@@ -146,6 +167,20 @@ export const AnalyticsDashboard = ({ client }: { client: any }) => {
             </div>
             <ResponsiveContainer width={320} height={320}>
               <PieChart>
+                {/* Inner donut: Cost without guidera (blue) */}
+                <Pie
+                  data={innerPieData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={85}
+                  fill="#ef4444" // red-500
+                  isAnimationActive={false}
+                  tooltipType="none"
+                />
+                {/* Outer donut: Cost Saved vs Actual Cost */}
                 <Pie
                   data={pieData}
                   dataKey="value"
@@ -156,13 +191,34 @@ export const AnalyticsDashboard = ({ client }: { client: any }) => {
                   outerRadius={140}
                   startAngle={90}
                   endAngle={-270}
+                  labelLine={false}
                 >
-                  {pieData.map((entry, idx) => (
-                    <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
-                  ))}
+                  <Cell key="cell-0" fill="#22c55e" /> {/* Cost Saved: green */}
+                  <Cell key="cell-1" fill="#6366f1" /> {/* Actual cost: purple */}
                 </Pie>
-                <Legend verticalAlign="bottom" height={36} />
-                <Tooltip />
+                <Tooltip
+                  formatter={(value: any, name: string) => [
+                    typeof value === 'number' ? value.toFixed(3) : value,
+                    name
+                  ]}
+                  filterNull={true}
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      // Only show tooltip for outer ring (Cost Saved, Actual cost)
+                      const filtered = payload.filter(p => p.name === 'Cost Saved' || p.name === 'Actual cost');
+                      if (filtered.length) {
+                        return (
+                          <div className="custom-tooltip bg-background p-2 rounded shadow">
+                            <span className="font-semibold">{filtered[0].name}: </span>
+                            {filtered[0].value.toFixed(3)}
+                          </div>
+                        );
+                      }
+                    }
+                    return null;
+                  }}
+                />
+                <Legend verticalAlign="bottom" height={36} wrapperStyle={{ marginTop: 24 }} />
               </PieChart>
             </ResponsiveContainer>
             <div className="text-xs text-muted-foreground mt-2">Total Cost Saved: <span className="font-semibold text-green-600">{analytics.percent_cost_saved?.toFixed(2) ?? 0}%</span> of possible cost</div>

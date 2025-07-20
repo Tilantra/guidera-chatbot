@@ -20,7 +20,7 @@ export const PromptGenerator = ({ client }: { client: any }) => {
     setIsGenerating(true);
     setSuggestions([]);
     try {
-      const res = await client.getSuggestions(userInput.trim());
+      const res = await client.getSuggestions(userInput);
       if (res && res.length > 0) {
         setSuggestions(res);
         toast.success("Prompt suggestions generated successfully!");

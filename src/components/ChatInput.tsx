@@ -15,6 +15,8 @@ interface ChatInputProps {
   onComplianceToggle?: (enabled: boolean) => void;
   cpValue?: number;
   onCpChange?: (value: number) => void;
+  redactionEnabled?: boolean;
+  onRedactionToggle?: (enabled: boolean) => void;
 }
 
 export const ChatInput = ({ 
@@ -24,7 +26,9 @@ export const ChatInput = ({
   complianceEnabled = true,
   onComplianceToggle,
   cpValue = 0.5,
-  onCpChange
+  onCpChange,
+  redactionEnabled = false,
+  onRedactionToggle
 }: ChatInputProps) => {
   const [message, setMessage] = useState("");
 
@@ -82,7 +86,7 @@ export const ChatInput = ({
             </div>
           </div>
 
-          {/* Right side - Compliance Toggle and Send Button */}
+          {/* Right side - Compliance Toggle, Redaction Toggle, and Send Button */}
           <div className="flex items-center gap-2">
             <Shield className="h-4 w-4 text-muted-foreground" />
             <Label htmlFor="compliance-toggle" className="text-xs">Compliance</Label>
@@ -90,6 +94,12 @@ export const ChatInput = ({
               id="compliance-toggle"
               checked={complianceEnabled}
               onCheckedChange={onComplianceToggle}
+            />
+            <Label htmlFor="redaction-toggle" className="text-xs ml-2">Redaction</Label>
+            <Switch
+              id="redaction-toggle"
+              checked={redactionEnabled}
+              onCheckedChange={onRedactionToggle}
             />
             <Button 
               type="submit" 

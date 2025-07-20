@@ -68,9 +68,9 @@ export default function Index() {
   }
 
   // Pass a generate function and the client to the chatbot
-  const handleGenerate = async (prompt, cpValue, complianceEnabled) => {
+  const handleGenerate = async (prompt, cpValue, complianceEnabled, redactionEnabled) => {
     try {
-      const result = await client.generate(prompt, {}, cpValue, complianceEnabled);
+      const result = await client.generate(prompt, {}, cpValue, complianceEnabled, redactionEnabled);
       return result;
     } catch (err) {
       throw err;

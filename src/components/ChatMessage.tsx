@@ -4,7 +4,10 @@ import { Badge } from "../components/ui/badge";
 import { Separator } from "../components/ui/seperator";
 import { Button } from "../components/ui/button";
 import { CheckCircle, XCircle, AlertTriangle, ExternalLink, Brain, User, ChevronDown, ChevronUp, DollarSign, Zap, Clock, Newspaper } from "lucide-react";
+import { Copy } from "lucide-react";
+import { useState as useReactState } from "react";
 import { Card as UiCard } from "../components/ui/card";
+import React from "react";
 
 export interface PlagiarismCheck {
   percentage: number;
@@ -48,10 +51,39 @@ interface ChatMessageProps {
   complianceEnabled?: boolean;
 }
 
+// Markdown-like formatter: supports ### headers, **bold**, *italics*, code blocks, and inline code
+function formatMarkdown(text: string) {
+  if (!text) return null;
+  // Code blocks (```lang\n...\n```)
+  text = text.replace(/```([\w]*)\n([\s\S]*?)```/g, (match, lang, code) => {
+    return `<pre class='bg-muted rounded p-3 my-2 overflow-x-auto'><code class='font-mono text-xs'>${escapeHtml(code)}</code></pre>`;
+  });
+  // Inline code (`code`)
+  text = text.replace(/`([^`]+)`/g, '<code class="bg-muted px-1 rounded font-mono text-xs">$1</code>');
+  // Replace ### headers with bold/large
+  text = text.replace(/^### (.*)$/gm, '<span class="font-bold text-lg">$1</span>');
+  // Replace **bold** with <strong>
+  text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  // Replace *italics* with <em>
+  text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+  // Replace --- with <hr>
+  text = text.replace(/^---$/gm, '<hr />');
+  return text;
+}
+
+// Helper to escape HTML in code blocks
+function escapeHtml(str: string) {
+  return str.replace(/[&<>"']/g, function(tag) {
+    const chars: any = {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'};
+    return chars[tag] || tag;
+  });
+}
+
 export const ChatMessage = ({ message, isLoading = false, complianceEnabled = true }: ChatMessageProps) => {
   const isUser = message.type === 'user';
   const [isPlagiarismExpanded, setIsPlagiarismExpanded] = useState(false);
   const [isComplianceExpanded, setIsComplianceExpanded] = useState(false);
+  const [copied, setCopied] = useReactState(false);
   
   // Try to parse the assistant's content as JSON
   let parsed = null;
@@ -80,6 +112,33 @@ export const ChatMessage = ({ message, isLoading = false, complianceEnabled = tr
             {parsed && parsed.model_id && (
               <Badge variant="secondary" className="text-xs">{parsed.model_id}</Badge>
             )}
+            {/* Copy button for assistant messages */}
+            {!isUser && (
+              <button
+                className="ml-auto p-1 rounded hover:bg-muted transition-colors relative"
+                title={copied ? 'Copied!' : 'Copy response'}
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  let textToCopy = '';
+                  if (parsed && parsed.response) {
+                    textToCopy = parsed.response;
+                  } else if (typeof message.content === 'string') {
+                    textToCopy = message.content;
+                  }
+                  try {
+                    await navigator.clipboard.writeText(textToCopy);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 1200);
+                  } catch {}
+                }}
+                style={{ marginLeft: 'auto' }}
+              >
+                <Copy className={`h-4 w-4 ${copied ? 'text-green-600' : 'text-muted-foreground'}`} />
+                {copied && (
+                  <span className="absolute right-0 top-6 text-xs bg-background border px-2 py-1 rounded shadow text-green-700">Copied!</span>
+                )}
+              </button>
+            )}
           </div>
 
           {/* Main Content */}
@@ -89,9 +148,9 @@ export const ChatMessage = ({ message, isLoading = false, complianceEnabled = tr
               {parsed && parsed.error && parsed.issues?.policy?.violation ? (
                 <div>{parsed.error}</div>
               ) : parsed && parsed.response
-                ? parsed.response.split(/\r?\n/).map((line: string, idx: number) => <div key={idx}>{line}</div>)
+                ? <div dangerouslySetInnerHTML={{ __html: formatMarkdown(parsed.response) }} />
                 : (typeof message.content === "string"
-                    ? message.content.split(/\r?\n/).map((line, idx) => <div key={idx}>{line}</div>)
+                    ? <div dangerouslySetInnerHTML={{ __html: formatMarkdown(message.content) }} />
                     : message.content)}
             </div>
           </div>
@@ -114,7 +173,13 @@ export const ChatMessage = ({ message, isLoading = false, complianceEnabled = tr
                 <summary className="flex items-center gap-2 cursor-pointer py-2 px-3 font-medium select-none">
                   <CheckCircle className="h-5 w-5 text-green-600" />
                   <span>Compliance Details</span>
-                  {parsed && parsed.compliance_report && <span className="ml-2 px-2 py-1 rounded bg-green-600 text-white text-xs font-semibold align-middle">PASSED</span>}
+                  {parsed && parsed.compliance_report && (
+                    parsed.redaction_occurred ? (
+                      <span className="ml-2 px-2 py-1 rounded bg-yellow-500 text-white text-xs font-semibold align-middle">WARNING</span>
+                    ) : (
+                      <span className="ml-2 px-2 py-1 rounded bg-green-600 text-white text-xs font-semibold align-middle">PASSED</span>
+                    )
+                  )}
                   {parsed && parsed.error && parsed.issues?.policy?.violation && <span className="ml-2 px-2 py-1 rounded bg-red-600 text-white text-xs font-semibold align-middle">FAILED</span>}
                   <span className="ml-auto">
                     <ChevronDown className="h-4 w-4 group-open:hidden" />
@@ -135,9 +200,24 @@ export const ChatMessage = ({ message, isLoading = false, complianceEnabled = tr
                     <div className="space-y-2">
                       <div className="text-green-700 text-sm font-medium">No content policies violated</div>
                       <div className="text-green-700 text-sm font-medium">Passed all content and safety filters</div>
-                      <div className="text-green-700 text-sm font-medium">No compliance flags triggered</div>
-                  </div>
-                )}
+                      {/* Sensitive info redaction logic */}
+                      {parsed && typeof parsed.redaction_occurred !== 'undefined' ? (
+                        parsed.redaction_occurred ? (
+                          <div className="flex items-center gap-2 text-yellow-700 text-sm font-medium">
+                            <AlertTriangle className="h-4 w-4 text-yellow-700" />
+                            Sensitive information found
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 text-green-700 text-sm font-medium">
+                            <CheckCircle className="h-4 w-4 text-green-700" />
+                            No sensitive information found
+                          </div>
+                        )
+                      ) : (
+                        <div className="text-green-700 text-sm font-medium">No sensitive information found</div>
+                      )}
+                    </div>
+                  )}
               </div>
               </details>
               {/* Plagiarism Analysis Dropdown (only if not policy violation) */}
