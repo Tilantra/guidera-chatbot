@@ -81,15 +81,12 @@ export class BrowserGuideraClient {
     }
   }
 
-  async getSuggestions(prompt: string): Promise<string[]> {
+  async getSuggestions(prompt: string): Promise<string | null> {
     if (!this.tokenValid()) {
       throw new Error('Not authenticated');
     }
     const url = `${this.apiBaseUrl}/suggestion`;
-    const headers = {
-      Authorization: `Bearer ${this.authToken}`,
-      'Content-Type': 'application/json',
-    };
+    const headers = { Authorization: `Bearer ${this.authToken}` };
     const payload = { prompt };
     const response = await axios.post(url, payload, { headers });
     if (response.status === 200) {
@@ -101,9 +98,9 @@ export class BrowserGuideraClient {
         !s.trim().startsWith('Here are three high-quality, diverse prompts')
       );
       if (filtered.length > 0) {
-        return filtered;
+        return filtered[0];
       } else {
-        return [];
+        return null;
       }
     } else if (response.status === 401) {
       this.clearJwt();
