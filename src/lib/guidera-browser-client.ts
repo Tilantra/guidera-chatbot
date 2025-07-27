@@ -55,7 +55,8 @@ export class BrowserGuideraClient {
     prefs: Record<string, any> = {},
     cpTradeoffParameter: number = 0.7,
     complianceEnabled: boolean = true,
-    redactionEnabled: boolean = false
+    redactionEnabled: boolean = false,
+    controlgrid: number = 0.5
   ): Promise<any> {
     if (!this.tokenValid()) {
       throw new Error('Not authenticated');
@@ -69,6 +70,7 @@ export class BrowserGuideraClient {
       prompt,
       prefs,
       cp_tradeoff_parameter: cpTradeoffParameter,
+      controlgrid: controlgrid,
       compliance_enabled: complianceEnabled,
       redaction_enabled: redactionEnabled,
     };

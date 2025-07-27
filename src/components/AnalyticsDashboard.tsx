@@ -218,7 +218,7 @@ export const AnalyticsDashboard = ({ client }: { client: any }) => {
                     return null;
                   }}
                 />
-                <Legend verticalAlign="bottom" height={36} wrapperStyle={{ marginTop: 24 }} />
+                <Legend verticalAlign="bottom" height={36} />
               </PieChart>
             </ResponsiveContainer>
             <div className="text-xs text-muted-foreground mt-2">Total Cost Saved: <span className="font-semibold text-green-600">{analytics.percent_cost_saved?.toFixed(2) ?? 0}%</span> of possible cost</div>
@@ -229,12 +229,48 @@ export const AnalyticsDashboard = ({ client }: { client: any }) => {
               <h4 className="text-lg font-semibold text-foreground">Model Usage</h4>
               <Badge variant="secondary">{barData.length} models</Badge>
             </div>
+            <style>
+              {`
+                .recharts-bar-rectangle:hover {
+                  fill: #a78bfa !important;
+                  opacity: 0.8 !important;
+                  transition: fill 0.2s ease;
+                }
+                .recharts-tooltip-cursor {
+                  display: none !important;
+                }
+                .recharts-default-tooltip {
+                  background: white !important;
+                  border: 1px solid #e5e7eb !important;
+                  border-radius: 6px !important;
+                  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+                }
+                .dark .recharts-default-tooltip {
+                  background: #1f2937 !important;
+                  border: 1px solid #374151 !important;
+                  color: white !important;
+                }
+                .dark .recharts-default-tooltip .recharts-tooltip-label {
+                  color: white !important;
+                }
+                .dark .recharts-default-tooltip .recharts-tooltip-item {
+                  color: white !important;
+                }
+                .dark .recharts-default-tooltip .recharts-tooltip-item-list {
+                  color: white !important;
+                }
+              `}
+            </style>
             <ResponsiveContainer width="100%" height={320}>
               <BarChart data={barData} margin={{ top: 10, right: 20, left: 0, bottom: 5 }} barSize={38}>
                 <XAxis dataKey="model" tick={{ fontSize: 12 }} angle={-15} textAnchor="end" interval={0} height={60} />
                 <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
                 <Tooltip />
-                <Bar dataKey="count" fill="#6366f1" radius={[8, 8, 0, 0]} />
+                <Bar 
+                  dataKey="count" 
+                  fill="#6366f1" 
+                  radius={[8, 8, 0, 0]}
+                />
               </BarChart>
             </ResponsiveContainer>
             {/* Top Models Table */}

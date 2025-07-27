@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Shield, Trash } from "lucide-react";
 import { toast } from "sonner";
+import { useTheme } from "./ThemeProvider";
 
 interface CompliancePolicy {
   id: string;
@@ -29,6 +30,7 @@ export const CompliancePolicyManager = ({ complianceEnabled = true, client, isAc
     description: '',
     type: '',
   });
+  const { theme } = useTheme();
 
   // Fetch policies from backend using client
   const fetchPolicies = async () => {
@@ -126,22 +128,17 @@ export const CompliancePolicyManager = ({ complianceEnabled = true, client, isAc
                 />
                 <div className="mb-6"></div>
                 <Label htmlFor="type">Type *</Label>
-                <div className="relative">
-                  <select
-                    id="type"
-                    value={newPolicy.type || ''}
-                    onChange={e => setNewPolicy(prev => ({ ...prev, type: e.target.value }))}
-                    className={`w-full border rounded p-2 mb-2 pr-8 appearance-none ${!newPolicy.type ? 'text-gray-400' : ''}`}
-                    required
-                  >
-                    <option value="" hidden>e.g., Input or Output</option>
-                    <option value="input">Input</option>
-                    <option value="output">Output</option>
-                  </select>
-                  <span className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                    ▼
-                  </span>
-                </div>
+                <select
+                  id="type"
+                  value={newPolicy.type || ''}
+                  onChange={e => setNewPolicy(prev => ({ ...prev, type: e.target.value }))}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  required
+                >
+                  <option value="" hidden>e.g., Input or Output</option>
+                  <option value="input">Input</option>
+                  <option value="output">Output</option>
+                </select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="description">Description *</Label>
@@ -171,14 +168,22 @@ export const CompliancePolicyManager = ({ complianceEnabled = true, client, isAc
           <div className="text-muted-foreground text-center py-8">No policies found.</div>
         )}
         {policies.map((policy) => (
-          <Card key={policy.id} className="shadow-card bg-card">
+          <Card key={policy.id} className={`shadow-card bg-card ${
+            theme === 'dark' 
+              ? 'border-2 border-gray-600 shadow-lg' 
+              : ''
+          }`}>
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <span className={`px-2 py-0.5 rounded text-xs font-semibold ${policy.type === 'input' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>{policy.type.charAt(0).toUpperCase() + policy.type.slice(1)}</span>
                   </div>
-                  <p className="text-sm text-muted-foreground">{policy.description}</p>
+                  <p className={`text-sm ${
+                    theme === 'dark' 
+                      ? 'text-white font-bold' 
+                      : 'text-gray-800'
+                  }`}>{policy.description}</p>
                 </div>
                 <Button
                   variant="ghost"

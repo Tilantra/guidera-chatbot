@@ -22,15 +22,15 @@ function LoginForm({ onLogin, error }) {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <form onSubmit={handleSubmit} className="bg-card p-8 rounded shadow-card w-full max-w-sm space-y-4">
-        <h2 className="text-xl font-bold mb-2">Login to Guidera Chatbot</h2>
+    <div className="flex min-h-screen items-center justify-center bg-white">
+      <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-lg border border-gray-200 w-full max-w-sm space-y-4">
+        <h2 className="text-xl font-bold mb-2 text-gray-900">Login to Guidera Chatbot</h2>
         <input
           type="email"
           placeholder="Email"
           value={email}
           onChange={e => setEmail(e.target.value)}
-          className="w-full p-2 border rounded"
+          className="w-full p-3 border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           required
         />
         <input
@@ -38,13 +38,13 @@ function LoginForm({ onLogin, error }) {
           placeholder="Password"
           value={password}
           onChange={e => setPassword(e.target.value)}
-          className="w-full p-2 border rounded"
+          className="w-full p-3 border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           required
         />
-        <button type="submit" className="w-full bg-primary text-white py-2 rounded" disabled={loading}>
+        <button type="submit" className="w-full bg-blue-600 text-white py-3 rounded-md font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed" disabled={loading}>
           {loading ? "Logging in..." : "Login"}
         </button>
-        {error && <div className="text-destructive text-sm">{error}</div>}
+        {error && <div className="text-red-600 text-sm font-medium">{error}</div>}
       </form>
     </div>
   );
@@ -68,9 +68,9 @@ export default function Index() {
   }
 
   // Pass a generate function and the client to the chatbot
-  const handleGenerate = async (prompt, cpValue, complianceEnabled, redactionEnabled) => {
+  const handleGenerate = async (prompt, cpValue, complianceEnabled, redactionEnabled, controlgrid) => {
     try {
-      const result = await client.generate(prompt, {}, cpValue, complianceEnabled, redactionEnabled);
+      const result = await client.generate(prompt, {}, cpValue, complianceEnabled, redactionEnabled, controlgrid);
       return result;
     } catch (err) {
       throw err;

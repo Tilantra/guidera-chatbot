@@ -152,13 +152,13 @@ const mockApiCall = async (message: string): Promise<Omit<ChatResponse, 'id' | '
   return scenarios[scenarioIndex];
 };
 
-export const ComplianceChatBot = ({ onGenerate, client }: { onGenerate?: (prompt: string, cpValue: number, complianceEnabled: boolean, redactionEnabled: boolean) => Promise<any>, client: any }) => {
+export const ComplianceChatBot = ({ onGenerate, client }: { onGenerate?: (prompt: string, cpValue: number, complianceEnabled: boolean, redactionEnabled: boolean, controlgrid: number) => Promise<any>, client: any }) => {
   const [messages, setMessages] = useState<ChatResponse[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("chat");
   const [complianceEnabled, setComplianceEnabled] = useState(true);
   const [redactionEnabled, setRedactionEnabled] = useState(false);
-  const [cpValue, setCpValue] = useState(0.5);
+  const [cpValue, setCpValue] = useState<[number, number]>([0.5, 0.5]);
   const [loadingMessageId, setLoadingMessageId] = useState<string | null>(null);
 
   // Analytics state
@@ -262,7 +262,7 @@ export const ComplianceChatBot = ({ onGenerate, client }: { onGenerate?: (prompt
     try {
       // Call API (use onGenerate if provided)
       let response = onGenerate
-        ? await onGenerate(messageContent, cpValue, complianceEnabled, redactionEnabled)
+        ? await onGenerate(messageContent, cpValue[0], complianceEnabled, redactionEnabled, cpValue[1])
         : await mockApiCall(messageContent);
 
       // If onGenerate, prettify the response
@@ -448,7 +448,10 @@ export const ComplianceChatBot = ({ onGenerate, client }: { onGenerate?: (prompt
                 complianceEnabled={complianceEnabled}
                 onComplianceToggle={setComplianceEnabled}
                 cpValue={cpValue}
-                onCpChange={setCpValue}
+                onCpChange={(value) => {
+                  if (Array.isArray(value)) setCpValue(value as [number, number]);
+                  else setCpValue([value as number, cpValue[1]]);
+                }}
                 redactionEnabled={redactionEnabled}
                 onRedactionToggle={setRedactionEnabled}
               />

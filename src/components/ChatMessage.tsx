@@ -185,7 +185,9 @@ export const ChatMessage = ({ message, isLoading = false, complianceEnabled = tr
                   <CheckCircle className="h-5 w-5 text-green-600" />
                   <span>Compliance Details</span>
                   {parsed && parsed.compliance_report && (
-                    parsed.redaction_occurred ? (
+                    (parsed.compliance_report.policy?.violation || parsed.compliance_report.safety?.violation) ? (
+                      <span className="ml-2 px-2 py-1 rounded bg-red-600 text-white text-xs font-semibold align-middle">FAILED</span>
+                    ) : parsed.redaction_occurred ? (
                       <span className="ml-2 px-2 py-1 rounded bg-yellow-500 text-white text-xs font-semibold align-middle">WARNING</span>
                     ) : (
                       <span className="ml-2 px-2 py-1 rounded bg-green-600 text-white text-xs font-semibold align-middle">PASSED</span>
@@ -201,18 +203,21 @@ export const ChatMessage = ({ message, isLoading = false, complianceEnabled = tr
                   {/* Special case: only show Content Guidelines for policy violation */}
                   {(
                     (parsed && parsed.error && parsed.issues?.policy?.violation) ||
-                    (parsed && parsed.compliance_report?.policy?.violation)
+                    (parsed && parsed.compliance_report?.policy?.violation) ||
+                    (parsed && parsed.compliance_report?.safety?.violation)
                   ) ? (
                     <div className="w-full p-3 rounded border bg-red-50 border-red-200 text-red-900">
                       <div className="flex items-center gap-2 font-semibold mb-1">
                         <XCircle className="h-4 w-4 text-red-600" />
-                        <span>Content Guidelines</span>
+                        <span>Compliance Failure</span>
                       </div>
                       <div className="text-sm whitespace-pre-line">{
                         parsed && parsed.error && parsed.issues?.policy?.violation
                           ? parsed.issues.policy.details
                           : parsed && parsed.compliance_report?.policy?.violation
                             ? parsed.compliance_report.policy.details
+                            : parsed && parsed.compliance_report?.safety?.violation
+                              ? parsed.compliance_report.safety.details
                             : null
                       }</div>
                     </div>
