@@ -7,11 +7,15 @@ import { ChatInput } from "./ChatInput";
 import { PromptGenerator } from "./PromptGenerator";
 import { AnalyticsDashboard } from "./AnalyticsDashboard";
 import { CompliancePolicyManager } from "./CompliancePolicyManager";
-import { ThemeToggle } from "./ThemeToggle";
+
 import { LoadingIndicator } from "./LoggingIndicator";
-import { Shield, Brain, RotateCcw, Settings, MessageSquare, Wand2, Bot, BarChart3, ShieldCheck } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Avatar } from "./Avatar";
+import { useTheme } from "./ThemeProvider";
+import { Shield, Brain, RotateCcw, Settings, MessageSquare, Wand2, Bot, BarChart3, ShieldCheck, User, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import GuideraLogo from '../components/assets/Guidera.png';
+import { SettingsPage } from "./SettingsPage";
 
 // Mock API call - replace with your actual API endpoint
 const mockApiCall = async (message: string): Promise<Omit<ChatResponse, 'id' | 'type' | 'timestamp'>> => {
@@ -152,7 +156,8 @@ const mockApiCall = async (message: string): Promise<Omit<ChatResponse, 'id' | '
   return scenarios[scenarioIndex];
 };
 
-export const ComplianceChatBot = ({ onGenerate, client }: { onGenerate?: (prompt: string, cpValue: number, complianceEnabled: boolean, redactionEnabled: boolean, controlgrid: number) => Promise<any>, client: any }) => {
+export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate?: (prompt: string, cpValue: number, complianceEnabled: boolean, redactionEnabled: boolean, controlgrid: number) => Promise<any>, client: any, onLogout?: () => void }) => {
+  const { userProfile } = useTheme();
   const [messages, setMessages] = useState<ChatResponse[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("chat");
@@ -344,7 +349,7 @@ export const ComplianceChatBot = ({ onGenerate, client }: { onGenerate?: (prompt
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background">
+    <div className="flex flex-col h-screen bg-background text-left">
       {/* Header */}
       <Card className="p-4 m-4 mb-2 shadow-card border-border/50 bg-card">
         <div className="flex items-center justify-between">
@@ -361,36 +366,74 @@ export const ComplianceChatBot = ({ onGenerate, client }: { onGenerate?: (prompt
           </div>
           
           <div className="flex items-center gap-2">
-            <ThemeToggle />
             <Button variant="outline" size="sm" onClick={handleClearChat}>
               <RotateCcw className="h-4 w-4" />
               Clear
             </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <div className="ml-2 cursor-pointer">
+                  <Avatar 
+                    style={userProfile.avatarStyle} 
+                    seed={userProfile.avatarSeed} 
+                    size={36}
+                    className="border-2 border-border hover:border-primary transition-colors"
+                  />
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setActiveTab('settings')}>
+                  <Settings className="h-4 w-4 mr-2" />
+                  Settings
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onLogout}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </Card>
 
-      {/* Main Content with Tabs */}
+      {/* Main Content */}
       <div className="flex-1 px-4">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-          <TabsList className="grid w-full grid-cols-4 sticky top-0 z-20 bg-background/95 border-b border-border shadow-sm">
-            <TabsTrigger value="chat" className="flex items-center gap-2">
-              <MessageSquare className="h-4 w-4" />
-              Chat
-            </TabsTrigger>
-            <TabsTrigger value="prompt-generator" className="flex items-center gap-2">
-              <Wand2 className="h-4 w-4" />
-              Prompt Generator
-            </TabsTrigger>
-            <TabsTrigger value="policies" className="flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4" />
-              Policies
-            </TabsTrigger>
-            <TabsTrigger value="dashboard" className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
-              Dashboard
-            </TabsTrigger>
-          </TabsList>
+        {/* Settings Page - Rendered Outside Tabs */}
+        {activeTab === 'settings' && (
+          <div className="h-full flex flex-col">
+            <div className="flex items-center gap-2 mb-4 p-2 border-b">
+              <Button variant="outline" size="sm" onClick={() => setActiveTab('chat')}>
+                ← Back
+              </Button>
+              <h1 className="text-lg font-semibold">Settings</h1>
+            </div>
+            <div className="flex-1 min-h-0">
+              <SettingsPage />
+            </div>
+          </div>
+        )}
+        
+        {/* Tabs Content - Only when NOT in settings */}
+        {activeTab !== 'settings' && (
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
+            <TabsList className="grid w-full grid-cols-4 sticky top-0 z-20 bg-background/95 border-b border-border shadow-sm">
+              <TabsTrigger value="chat" className="flex items-center gap-2">
+                <MessageSquare className="h-4 w-4" />
+                Chat
+              </TabsTrigger>
+              <TabsTrigger value="prompt-generator" className="flex items-center gap-2">
+                <Wand2 className="h-4 w-4" />
+                Prompt Generator
+              </TabsTrigger>
+              <TabsTrigger value="policies" className="flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4" />
+                Policies
+              </TabsTrigger>
+              <TabsTrigger value="dashboard" className="flex items-center gap-2">
+                <BarChart3 className="h-4 w-4" />
+                Dashboard
+              </TabsTrigger>
+            </TabsList>
 
           <TabsContent value="chat" className="flex-1 flex flex-col">
             {/* Chat Messages */}
@@ -468,6 +511,7 @@ export const ComplianceChatBot = ({ onGenerate, client }: { onGenerate?: (prompt
             <AnalyticsDashboard client={client} />
           </TabsContent>
         </Tabs>
+        )}
       </div>
     </div>
   );
