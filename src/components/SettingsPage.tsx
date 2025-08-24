@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { useTheme } from "./ThemeProvider";
 import { Avatar } from "./Avatar";
 import { AvatarSelector } from "./AvatarSelector";
-import { User, Key, Palette, CreditCard, Bell, Shield, Lock, Plus, Trash2, Eye, EyeOff, Globe, Monitor, Sun, Moon, Settings2, Smartphone, Mail, MessageSquare, AlertTriangle, RotateCcw } from "lucide-react";
+import { User, Key, Palette, CreditCard, Bell, Shield, Lock, Plus, Trash2, Eye, EyeOff, Globe, Monitor, Sun, Moon, Settings2, Smartphone, Mail, MessageSquare, AlertTriangle, RotateCcw, BarChart3, Target, TrendingUp } from "lucide-react";
 
 const sidebarItems = [
   { key: "profile", label: "Profile", icon: <User className="h-5 w-5" /> },
@@ -556,115 +556,139 @@ export const SettingsPage = () => {
         );
       case "credits":
         return (
-          <div className="space-y-6">
-            {/* Credits Overview */}
-            <Card className="p-6 w-full">
-              <h2 className="text-lg font-bold mb-6 flex items-center gap-2">
-                <CreditCard className="h-5 w-5" /> Credits Overview
-              </h2>
+          <div className="space-y-4">
+            {/* Credits Overview Dashboard */}
+            <Card className="p-4 w-full">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold flex items-center gap-2">
+                  <CreditCard className="h-5 w-5 text-primary" />
+                  Credits Dashboard
+                </h2>
+                <Badge variant="secondary" className="text-xs px-2 py-1">
+                  Pro Plan
+                </Badge>
+              </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/50 dark:to-blue-900/50 rounded-lg">
-                  <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">
-                    {credits.available}
+              <div className="mb-6">
+                {/* Main Stats Row */}
+                <div className="grid grid-cols-3 gap-3 mb-4">
+                  <div className="text-center p-3 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/40 rounded-lg border border-blue-200/50 dark:border-blue-800/50">
+                    <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <CreditCard className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">{credits.available}</div>
+                    <div className="text-xs text-blue-700 dark:text-blue-300">Available</div>
                   </div>
-                  <div className="text-sm text-blue-800 dark:text-blue-300 font-medium">Available Credits</div>
+                  
+                  <div className="text-center p-3 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/30 dark:to-orange-900/40 rounded-lg border border-orange-200/50 dark:border-orange-800/50">
+                    <div className="w-8 h-8 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <BarChart3 className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                    </div>
+                    <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">{credits.used}</div>
+                    <div className="text-xs text-orange-700 dark:text-orange-300">Used</div>
+                  </div>
+                  
+                  <div className="text-center p-3 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/30 dark:to-green-900/40 rounded-lg border border-green-200/50 dark:border-green-800/50">
+                    <div className="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <Target className="h-4 w-4 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div className="text-2xl font-bold text-green-900 dark:text-green-100">{credits.total}</div>
+                    <div className="text-xs text-green-700 dark:text-green-300">Total</div>
+                  </div>
                 </div>
                 
-                <div className="text-center p-6 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/50 dark:to-orange-900/50 rounded-lg">
-                  <div className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-2">
-                    {credits.used}
+                {/* Usage Summary Card */}
+                <div className="p-4 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30 rounded-lg border border-purple-200/50 dark:border-purple-800/50">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-purple-500/20 rounded-full flex items-center justify-center">
+                        <TrendingUp className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                      </div>
+                      <div>
+                        <div className="text-lg font-semibold text-purple-900 dark:text-purple-100">
+                          {((credits.used / credits.total) * 100).toFixed(1)}% Usage
+                        </div>
+                        <div className="text-sm text-purple-700 dark:text-purple-300">
+                          {credits.available} credits remaining this month
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm text-muted-foreground">Monthly Limit</div>
+                      <div className="text-lg font-semibold">{credits.total}</div>
+                    </div>
                   </div>
-                  <div className="text-sm text-orange-800 dark:text-orange-300 font-medium">Used This Month</div>
-                </div>
-                
-                <div className="text-center p-6 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/50 dark:to-green-900/50 rounded-lg">
-                  <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
-                    {credits.total}
-                  </div>
-                  <div className="text-sm text-green-800 dark:text-green-300 font-medium">Total Credits</div>
                 </div>
               </div>
               
-              {/* Usage Progress */}
-              <div className="mb-6">
+              {/* Compact Progress Bar */}
+              <div className="p-4 bg-muted/50 rounded-lg">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-sm font-medium">Monthly Usage</span>
-                  <span className="text-sm text-muted-foreground">
-                    {credits.used} / {credits.total} credits used
-                  </span>
+                  <span className="text-sm text-muted-foreground">{credits.used}/{credits.total}</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="w-full bg-muted rounded-full h-2">
                   <div 
                     className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all"
-                    style={{ width: `${(credits.used / credits.total) * 100}%` }}
+                    style={{ width: `${Math.min((credits.used / credits.total) * 100, 100)}%` }}
                   ></div>
                 </div>
               </div>
             </Card>
             
-            {/* Purchase Options */}
-            <Card className="p-6 w-full">
-              <h3 className="text-lg font-bold mb-4">Purchase Credits</h3>
+            {/* Compact Purchase Options */}
+            <Card className="p-4 w-full">
+              <h3 className="text-lg font-semibold mb-4">Add Credits</h3>
+              
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="border-2 border-border rounded-lg p-6 hover:border-primary/50 transition-all cursor-pointer">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold mb-2">100</div>
-                    <div className="text-sm text-muted-foreground mb-4">Credits</div>
-                    <div className="text-xl font-bold text-primary mb-4">$9.99</div>
-                    <Button 
-                      className="w-full" 
-                      onClick={() => handleBuyCredits(100)}
-                    >
+                <div className="border rounded-lg p-4 hover:shadow-md transition-shadow text-center">
+                  <div className="space-y-3">
+                    <div className="text-xl font-bold">100</div>
+                    <div className="text-lg font-semibold text-primary">$9.99</div>
+                    <div className="text-xs text-muted-foreground">$0.10 per credit</div>
+                    <Button size="sm" variant="outline" className="w-full" onClick={() => handleBuyCredits(100)}>
                       Purchase
                     </Button>
                   </div>
                 </div>
                 
-                <div className="border-2 border-primary rounded-lg p-6 bg-primary/5 relative">
-                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                    <span className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-medium">
-                      Most Popular
-                    </span>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold mb-2">500</div>
-                    <div className="text-sm text-muted-foreground mb-4">Credits</div>
-                    <div className="text-xl font-bold text-primary mb-2">$39.99</div>
-                    <div className="text-xs text-green-600 font-medium mb-4">Save 20%</div>
-                    <Button 
-                      className="w-full" 
-                      onClick={() => handleBuyCredits(500)}
-                    >
+                <div className="border-2 border-primary rounded-lg p-4 bg-primary/5 relative text-center">
+                  <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground text-xs">
+                    Best Value
+                  </Badge>
+                  <div className="space-y-3">
+                    <div className="text-xl font-bold">500</div>
+                    <div>
+                      <div className="text-lg font-semibold text-primary">$39.99</div>
+                      <div className="text-xs text-green-600 font-medium">Save 20%</div>
+                    </div>
+                    <div className="text-xs text-muted-foreground">$0.08 per credit</div>
+                    <Button size="sm" className="w-full" onClick={() => handleBuyCredits(500)}>
                       Purchase
                     </Button>
                   </div>
                 </div>
                 
-                <div className="border-2 border-border rounded-lg p-6 hover:border-primary/50 transition-all cursor-pointer">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold mb-2">1000</div>
-                    <div className="text-sm text-muted-foreground mb-4">Credits</div>
-                    <div className="text-xl font-bold text-primary mb-2">$69.99</div>
-                    <div className="text-xs text-green-600 font-medium mb-4">Save 30%</div>
-                    <Button 
-                      className="w-full" 
-                      onClick={() => handleBuyCredits(1000)}
-                    >
+                <div className="border rounded-lg p-4 hover:shadow-md transition-shadow text-center">
+                  <div className="space-y-3">
+                    <div className="text-xl font-bold">1,000</div>
+                    <div>
+                      <div className="text-lg font-semibold text-primary">$69.99</div>
+                      <div className="text-xs text-green-600 font-medium">Save 30%</div>
+                    </div>
+                    <div className="text-xs text-muted-foreground">$0.07 per credit</div>
+                    <Button size="sm" variant="outline" className="w-full" onClick={() => handleBuyCredits(1000)}>
                       Purchase
                     </Button>
                   </div>
                 </div>
               </div>
               
-              <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-                <h4 className="font-medium mb-2">Credit Usage Information</h4>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• 1 credit = 1 AI compliance check</li>
-                  <li>• Credits never expire</li>
-                  <li>• Volume discounts available for enterprise customers</li>
-                  <li>• Secure payment processing via Stripe</li>
-                </ul>
+              {/* Quick Info */}
+              <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+                <div className="text-sm text-blue-800 dark:text-blue-200">
+                  <span className="font-medium">💡 Credits never expire</span> • 1 credit = 1 AI check • Secure payment via Stripe
+                </div>
               </div>
             </Card>
           </div>

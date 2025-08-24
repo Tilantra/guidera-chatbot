@@ -5,9 +5,10 @@ import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
-import { Send, Loader2, Shield, Grid } from "lucide-react";
+import { Send, Loader2, Shield, Grid, Wand2 } from "lucide-react";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { useTheme } from "./ThemeProvider";
+import { PromptSuggestionsDialog } from "./PromptSuggestionsDialog";
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
@@ -19,6 +20,7 @@ interface ChatInputProps {
   onCpChange?: (value: number | [number, number]) => void;
   redactionEnabled?: boolean;
   onRedactionToggle?: (enabled: boolean) => void;
+  client?: any;
 }
 
 interface AxisValues {
@@ -37,9 +39,11 @@ export const ChatInput = ({
   cpValue = 0.5,
   onCpChange,
   redactionEnabled = false,
-  onRedactionToggle
+  onRedactionToggle,
+  client
 }: ChatInputProps) => {
   const [message, setMessage] = useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
   const { theme } = useTheme();
   
   // Initialize axis values from cpValue
@@ -96,6 +100,17 @@ export const ChatInput = ({
     }
   };
 
+  const handleMagicButtonClick = () => {
+    if (!message.trim()) {
+      return; // Don't open dialog if no input
+    }
+    setDialogOpen(true);
+  };
+
+  const handlePromptSelect = (selectedPrompt: string) => {
+    setMessage(selectedPrompt);
+  };
+
   // Calculate current cp values from axis values
   const cp = calculateCpValues(axisValues);
 
@@ -120,14 +135,29 @@ export const ChatInput = ({
   return (
     <Card className="p-4 shadow-card border-border/50 bg-card">
       <form onSubmit={handleSubmit} className="space-y-3">
-        <Textarea
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-          className="min-h-[80px] resize-none border-border/50 focus:border-primary/50 transition-colors"
-          disabled={isLoading}
-        />
+        <div className="relative">
+          <Textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={placeholder}
+            className="min-h-[80px] resize-none border-border/50 focus:border-primary/50 transition-colors pr-12"
+            disabled={isLoading}
+          />
+          {client && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleMagicButtonClick}
+              disabled={!message.trim() || isLoading}
+              className="absolute top-2 right-2 h-10 w-10 p-0 bg-purple-500/20 hover:bg-purple-500/30 text-purple-600 hover:text-purple-700 border border-purple-300/50 rounded-lg transition-colors"
+              title="Generate prompt suggestions"
+            >
+              <Wand2 className="h-5 w-5" />
+            </Button>
+          )}
+        </div>
         
         {/* Controls Row */}
         <div className="flex items-center justify-between gap-4">
@@ -291,6 +321,14 @@ export const ChatInput = ({
           </div>
         </div>
       </form>
+      
+      <PromptSuggestionsDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        userInput={message}
+        client={client}
+        onPromptSelect={handlePromptSelect}
+      />
     </Card>
   );
 };

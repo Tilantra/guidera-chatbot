@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChatMessage, type ChatResponse, type PerformanceMetrics } from "./ChatMessage";
 import { ChatInput } from "./ChatInput";
-import { PromptGenerator } from "./PromptGenerator";
 import { AnalyticsDashboard } from "./AnalyticsDashboard";
 import { CompliancePolicyManager } from "./CompliancePolicyManager";
 
@@ -12,7 +11,7 @@ import { LoadingIndicator } from "./LoggingIndicator";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar } from "./Avatar";
 import { useTheme } from "./ThemeProvider";
-import { Shield, Brain, RotateCcw, Settings, MessageSquare, Wand2, Bot, BarChart3, ShieldCheck, User, LogOut } from "lucide-react";
+import { Shield, Brain, RotateCcw, Settings, MessageSquare, Bot, BarChart3, ShieldCheck, User, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import GuideraLogo from '../components/assets/Guidera.png';
 import { SettingsPage } from "./SettingsPage";
@@ -416,14 +415,10 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
         {/* Tabs Content - Only when NOT in settings */}
         {activeTab !== 'settings' && (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-            <TabsList className="grid w-full grid-cols-4 sticky top-0 z-20 bg-background/95 border-b border-border shadow-sm">
+            <TabsList className="grid w-full grid-cols-3 sticky top-0 z-20 bg-background/95 border-b border-border shadow-sm">
               <TabsTrigger value="chat" className="flex items-center gap-2">
                 <MessageSquare className="h-4 w-4" />
                 Chat
-              </TabsTrigger>
-              <TabsTrigger value="prompt-generator" className="flex items-center gap-2">
-                <Wand2 className="h-4 w-4" />
-                Prompt Generator
               </TabsTrigger>
               <TabsTrigger value="policies" className="flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4" />
@@ -497,13 +492,12 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
                 }}
                 redactionEnabled={redactionEnabled}
                 onRedactionToggle={setRedactionEnabled}
+                client={client}
               />
             </div>
           </TabsContent>
 
-          <TabsContent value="prompt-generator" className="flex-1 flex flex-col">
-            <PromptGenerator client={client} />
-          </TabsContent>
+
           <TabsContent value="policies" className="flex flex-col h-full">
             <CompliancePolicyManager client={client} isActive={activeTab === "policies"} />
           </TabsContent>
