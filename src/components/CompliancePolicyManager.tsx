@@ -1,11 +1,15 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Shield, Trash } from "lucide-react";
+import { 
+  Plus, Shield, Trash, FileText, Lock, Eye, EyeOff, RefreshCw,
+  CheckCircle
+} from "lucide-react";
 import { toast } from "sonner";
 import { useTheme } from "./ThemeProvider";
 
@@ -25,6 +29,7 @@ interface CompliancePolicyManagerProps {
 export const CompliancePolicyManager = ({ complianceEnabled = true, client, isActive }: CompliancePolicyManagerProps) => {
   const [policies, setPolicies] = useState<CompliancePolicy[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [newPolicy, setNewPolicy] = useState<Partial<CompliancePolicy>>({
     name: '',
     description: '',
@@ -34,6 +39,7 @@ export const CompliancePolicyManager = ({ complianceEnabled = true, client, isAc
 
   // Fetch policies from backend using client
   const fetchPolicies = async () => {
+    setIsLoading(true);
     try {
       const data = await client.getPolicies();
       console.log('Fetched policies:', data); // DEBUG
@@ -55,7 +61,17 @@ export const CompliancePolicyManager = ({ complianceEnabled = true, client, isAc
       setPolicies(allPolicies);
     } catch (err) {
       setPolicies([]);
+      toast.error('Failed to load policies');
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  // Policy statistics
+  const stats = {
+    total: policies.length,
+    input: policies.filter(p => p.type === 'input').length,
+    output: policies.filter(p => p.type === 'output').length,
   };
 
   useEffect(() => {
@@ -91,114 +107,207 @@ export const CompliancePolicyManager = ({ complianceEnabled = true, client, isAc
   };
 
   return (
-    <div className="flex-1 overflow-y-auto p-6">
-      {/* Header - always at the top */}
-      <div className="flex items-start justify-between mb-8">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Shield className="h-6 w-6 text-primary" />
-            Compliance Policy Management
-          </h2>
-          <p className="text-muted-foreground mt-1">
-            Configure and manage compliance policies for content analysis
+    <div className="w-full max-w-[95vw] mx-auto p-6 space-y-6 bg-gradient-to-br from-background via-background to-secondary/5">
+      {/* Header Section */}
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent flex items-center gap-3">
+            <Shield className="h-8 w-8 text-primary" />
+            Policy Management
+          </h1>
+          <p className="text-muted-foreground flex items-center gap-2">
+            <Lock className="h-4 w-4" />
+            Configure and manage compliance policies for enterprise security
           </p>
         </div>
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="gap-2">
-              <Plus className="h-4 w-4" />
-              Add Policy
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Add New Compliance Policy</DialogTitle>
-              <DialogDescription>
-                Create a new policy for content analysis.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Policy Name *</Label>
-                <Input
-                  id="name"
-                  placeholder="e.g., Phone Numbers"
-                  value={newPolicy.name || ''}
-                  onChange={e => setNewPolicy(prev => ({ ...prev, name: e.target.value }))}
-                />
-                <div className="mb-6"></div>
-                <Label htmlFor="type">Type *</Label>
-                <select
-                  id="type"
-                  value={newPolicy.type || ''}
-                  onChange={e => setNewPolicy(prev => ({ ...prev, type: e.target.value }))}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  required
-                >
-                  <option value="" hidden>e.g., Input or Output</option>
-                  <option value="input">Input</option>
-                  <option value="output">Output</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="description">Description *</Label>
-                <Textarea
-                  id="description"
-                  placeholder="Brief description of what this policy detects"
-                  value={newPolicy.description || ''}
-                  onChange={e => setNewPolicy(prev => ({ ...prev, description: e.target.value }))}
-                  rows={3}
-                />
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 pt-4">
-              <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleAddPolicy}>
+        <div className="flex items-center gap-4">
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="gap-2 bg-primary/90 hover:bg-primary">
+                <Plus className="h-4 w-4" />
                 Add Policy
               </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
-      {/* Policies List */}
-      <div className="grid grid-cols-1 gap-4">
-        {policies.length === 0 && (
-          <div className="text-muted-foreground text-center py-8">No policies found.</div>
-        )}
-        {policies.map((policy) => (
-          <Card key={policy.id} className={`shadow-card bg-card ${
-            theme === 'dark' 
-              ? 'border-2 border-gray-600 shadow-lg' 
-              : ''
-          }`}>
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className={`px-2 py-0.5 rounded text-xs font-semibold ${policy.type === 'input' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>{policy.type.charAt(0).toUpperCase() + policy.type.slice(1)}</span>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl bg-gradient-to-br from-card to-secondary/5">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2 text-xl">
+                  <Shield className="h-5 w-5 text-primary" />
+                  Create New Compliance Policy
+                </DialogTitle>
+                <DialogDescription>
+                  Define a new policy to enhance your content analysis and security framework.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name" className="text-sm font-medium">Policy Name *</Label>
+                    <Input
+                      id="name"
+                      placeholder="e.g., Personal Data Detection"
+                      value={newPolicy.name || ''}
+                      onChange={e => setNewPolicy(prev => ({ ...prev, name: e.target.value }))}
+                      className="h-10"
+                    />
                   </div>
-                  <p className={`text-sm ${
-                    theme === 'dark' 
-                      ? 'text-white font-bold' 
-                      : 'text-gray-800'
-                  }`}>{policy.description}</p>
+                  <div className="space-y-2">
+                    <Label htmlFor="type" className="text-sm font-medium">Policy Type *</Label>
+                    <select
+                      id="type"
+                      value={newPolicy.type || ''}
+                      onChange={e => setNewPolicy(prev => ({ ...prev, type: e.target.value }))}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    >
+                      <option value="">Select type</option>
+                      <option value="input">Input</option>
+                      <option value="output">Output</option>
+                    </select>
+                  </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="ml-4 text-destructive hover:bg-destructive/10"
-                  onClick={() => handleDeletePolicy(policy)}
-                  aria-label="Delete policy"
-                >
-                  <Trash className="h-5 w-5" />
+                <div className="space-y-2">
+                  <Label htmlFor="description" className="text-sm font-medium">Policy Description *</Label>
+                  <Textarea
+                    id="description"
+                    placeholder="Describe what this policy detects, prevents, or validates..."
+                    value={newPolicy.description || ''}
+                    onChange={e => setNewPolicy(prev => ({ ...prev, description: e.target.value }))}
+                    rows={4}
+                    className="resize-none"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-3 pt-4">
+                <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleAddPolicy} className="bg-primary hover:bg-primary/90">
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Create Policy
                 </Button>
               </div>
-            </CardContent>
-          </Card>
-        ))}
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
+
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <Card className="relative overflow-hidden bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/50 dark:to-blue-900/50 border-0">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-blue-700 dark:text-blue-300">Total Policies</p>
+                <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{stats.total}</p>
+              </div>
+              <div className="h-10 w-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                <FileText className="h-5 w-5 text-blue-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="relative overflow-hidden bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/50 dark:to-purple-900/50 border-0">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-purple-700 dark:text-purple-300">Input Policies</p>
+                <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">{stats.input}</p>
+              </div>
+              <div className="h-10 w-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                <Eye className="h-5 w-5 text-purple-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="relative overflow-hidden bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/50 dark:to-green-900/50 border-0">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-green-700 dark:text-green-300">Output Policies</p>
+                <p className="text-2xl font-bold text-green-900 dark:text-green-100">{stats.output}</p>
+              </div>
+              <div className="h-10 w-10 rounded-lg bg-green-500/20 flex items-center justify-center">
+                <EyeOff className="h-5 w-5 text-green-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+
+
+      {/* Policies Grid */}
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+            <p className="text-muted-foreground">Loading policies...</p>
+          </div>
+        </div>
+      ) : policies.length === 0 ? (
+        <Card className="bg-gradient-to-br from-card to-secondary/5 border-0 shadow-lg">
+          <CardContent className="p-12 text-center">
+            <Shield className="h-16 w-16 mx-auto mb-4 text-muted-foreground/50" />
+            <h3 className="text-xl font-semibold text-foreground mb-2">
+              No policies configured
+            </h3>
+            <p className="text-muted-foreground mb-6">
+              Get started by creating your first compliance policy to enhance security.
+            </p>
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  Create Your First Policy
+                </Button>
+              </DialogTrigger>
+            </Dialog>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          {policies.map((policy) => (
+            <Card key={policy.id} className="bg-gradient-to-br from-card to-secondary/5 border-0 shadow-lg hover:shadow-xl transition-all duration-300 group">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className={`p-2 rounded-lg ${
+                      policy.type === 'input' 
+                        ? 'bg-purple-100 dark:bg-purple-950/30' 
+                        : 'bg-green-100 dark:bg-green-950/30'
+                    }`}>
+                      {policy.type === 'input' ? (
+                        <Eye className="h-4 w-4 text-purple-600" />
+                      ) : (
+                        <EyeOff className="h-4 w-4 text-green-600" />
+                      )}
+                    </div>
+                    <Badge variant={policy.type === 'input' ? 'secondary' : 'outline'} className="text-xs">
+                      {policy.type === 'input' ? 'Input' : 'Output'}
+                    </Badge>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:bg-destructive/10"
+                    onClick={() => handleDeletePolicy(policy)}
+                  >
+                    <Trash className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <p className="text-base text-foreground leading-relaxed font-medium">
+                    {policy.description}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

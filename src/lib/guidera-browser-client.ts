@@ -39,6 +39,9 @@ export class BrowserGuideraClient {
       const result = response.data;
       const token = result.token;
       const exp = result.exp || Math.floor(Date.now() / 1000) + 2 * 3600;
+      console.log(result);
+      console.log(token);
+      console.log(exp);
       if (token) {
         this.saveJwt(token, exp);
         return token;
