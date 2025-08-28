@@ -164,6 +164,10 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
   const [redactionEnabled, setRedactionEnabled] = useState(false);
   const [cpValue, setCpValue] = useState<[number, number]>([0.5, 0.5]);
   const [loadingMessageId, setLoadingMessageId] = useState<string | null>(null);
+  
+  // Model preference state
+  const [usePreferredModel, setUsePreferredModel] = useState<boolean>(true);
+  const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
 
   // Analytics state
   const [analyticsData, setAnalyticsData] = useState({
@@ -238,6 +242,11 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
     });
   }, [messages]);
 
+  // Handle model preference changes
+  const handleModelChange = (modelId: string | null, usePreferred: boolean) => {
+    setSelectedModelId(modelId);
+    setUsePreferredModel(usePreferred);
+  };
 
   const handleSendMessage = async (messageContent: string) => {
     // Add user message
@@ -264,10 +273,25 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
     setLoadingMessageId(loadingMessageId);
 
     try {
-      // Call API (use onGenerate if provided)
-      let response = onGenerate
-        ? await onGenerate(messageContent, cpValue[0], complianceEnabled, redactionEnabled, cpValue[1])
-        : await mockApiCall(messageContent);
+      // Call API (use real client call instead of mock/onGenerate)
+      let response;
+      if (client) {
+        // Use the real client with model preferences
+        response = await client.generate(
+          messageContent,
+          cpValue[0], // cp_tradeoff_parameter
+          complianceEnabled,
+          redactionEnabled,
+          cpValue[1], // controlgrid
+          usePreferredModel
+        );
+      } else if (onGenerate) {
+        // Fallback to onGenerate prop (for backward compatibility)
+        response = await onGenerate(messageContent, cpValue[0], complianceEnabled, redactionEnabled, cpValue[1]);
+      } else {
+        // Fallback to mock
+        response = await mockApiCall(messageContent);
+      }
 
       // If onGenerate, prettify the response
       let content: string;
@@ -493,6 +517,7 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
                 redactionEnabled={redactionEnabled}
                 onRedactionToggle={setRedactionEnabled}
                 client={client}
+                onModelChange={handleModelChange}
               />
             </div>
           </TabsContent>
