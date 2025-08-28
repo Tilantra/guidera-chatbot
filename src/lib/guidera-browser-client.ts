@@ -202,20 +202,23 @@ export class BrowserGuideraClient {
       throw new Error('Not authenticated');
     }
     
-    // Use the existing getUsermodels endpoint with token as query parameter
-    // When backend is updated, this will be replaced with the preference endpoint
-    const url = `${this.apiBaseUrl}/users/getUsermodels?token=${this.authToken}`;
+    // Use updated getUsermodels endpoint with enhanced response (models + preferences)
+    
+    const url = `${this.apiBaseUrl}/users/getUsermodels`;
+    const headers = {
+      Authorization: `Bearer ${this.authToken}`,
+      'Content-Type': 'application/json',
+    };
     
     try {
-      const response = await axios.get(url);
+      const response = await axios.get(url, { headers });
       
       if (response.status === 200) {
-        // Transform the response to match expected format
-        const models = response.data.models || [];
+        // Backend now returns enhanced response with both legacy and new formats
         return {
-          preferred_model: null, // Will be populated when backend is updated
-          accessible_models: models,
-          preference_updated_at: undefined
+          preferred_model: response.data.preferred_model || null,
+          accessible_models: response.data.accessible_models || response.data.models || [],
+          preference_updated_at: response.data.preference_updated_at
         };
       } else if (response.status === 401) {
         this.clearJwt();
