@@ -75,7 +75,7 @@ export class BrowserGuideraClient {
       controlgrid: controlgrid,
       compliance_enabled: complianceEnabled,
       redaction_enabled: redactionEnabled,
-      use_preferred_model: usePreferredModel,
+                  use_preferred_model: usePreferredModel,
     };
     const response = await axios.post(generateUrl, requestData, { headers });
     if (response.status === 200) {
@@ -201,19 +201,31 @@ export class BrowserGuideraClient {
     if (!this.tokenValid()) {
       throw new Error('Not authenticated');
     }
-    const url = `${this.apiBaseUrl}/users/preferences/model`;
-    const headers = {
-      Authorization: `Bearer ${this.authToken}`,
-      'Content-Type': 'application/json',
-    };
-    const response = await axios.get(url, { headers });
-    if (response.status === 200) {
-      return response.data;
-    } else if (response.status === 401) {
-      this.clearJwt();
-      throw new Error('Session expired or invalid. Please log in again.');
-    } else {
-      throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
+    
+    // Use the existing getUsermodels endpoint with token as query parameter
+    // When backend is updated, this will be replaced with the preference endpoint
+    const url = `${this.apiBaseUrl}/users/getUsermodels?token=${this.authToken}`;
+    
+    try {
+      const response = await axios.get(url);
+      
+      if (response.status === 200) {
+        // Transform the response to match expected format
+        const models = response.data.models || [];
+        return {
+          preferred_model: null, // Will be populated when backend is updated
+          accessible_models: models,
+          preference_updated_at: undefined
+        };
+      } else if (response.status === 401) {
+        this.clearJwt();
+        throw new Error('Session expired or invalid. Please log in again.');
+      } else {
+        throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
+      }
+    } catch (error: any) {
+      console.error("Error fetching user models:", error);
+      throw error;
     }
   }
 
