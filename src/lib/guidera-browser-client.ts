@@ -55,11 +55,11 @@ export class BrowserGuideraClient {
 
   async generate(
     prompt: string,
-    prefs: Record<string, any> = {},
     cpTradeoffParameter: number = 0.7,
     complianceEnabled: boolean = true,
     redactionEnabled: boolean = false,
-    controlgrid: number = 0.5
+    controlgrid: number = 0.5,
+    usePreferredModel: boolean = true
   ): Promise<any> {
     if (!this.tokenValid()) {
       throw new Error('Not authenticated');
@@ -71,11 +71,11 @@ export class BrowserGuideraClient {
     };
     const requestData = {
       prompt,
-      prefs,
       cp_tradeoff_parameter: cpTradeoffParameter,
       controlgrid: controlgrid,
       compliance_enabled: complianceEnabled,
       redaction_enabled: redactionEnabled,
+                  use_preferred_model: usePreferredModel,
     };
     const response = await axios.post(generateUrl, requestData, { headers });
     if (response.status === 200) {
@@ -186,6 +186,83 @@ export class BrowserGuideraClient {
       'Content-Type': 'application/json',
     };
     const response = await axios.get(url, { headers });
+    if (response.status === 200) {
+      return response.data;
+    } else if (response.status === 401) {
+      this.clearJwt();
+      throw new Error('Session expired or invalid. Please log in again.');
+    } else {
+      throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
+    }
+  }
+
+  // Model Preference Methods
+  async getPreferredModel(): Promise<{ preferred_model: string | null; accessible_models: string[]; preference_updated_at?: string }> {
+    if (!this.tokenValid()) {
+      throw new Error('Not authenticated');
+    }
+    
+    // Use updated getUsermodels endpoint with enhanced response (models + preferences)
+    
+    const url = `${this.apiBaseUrl}/users/getUsermodels`;
+    const headers = {
+      Authorization: `Bearer ${this.authToken}`,
+      'Content-Type': 'application/json',
+    };
+    
+    try {
+      const response = await axios.get(url, { headers });
+      
+      if (response.status === 200) {
+        // Backend now returns enhanced response with both legacy and new formats
+        return {
+          preferred_model: response.data.preferred_model || null,
+          accessible_models: response.data.accessible_models || response.data.models || [],
+          preference_updated_at: response.data.preference_updated_at
+        };
+      } else if (response.status === 401) {
+        this.clearJwt();
+        throw new Error('Session expired or invalid. Please log in again.');
+      } else {
+        throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
+      }
+    } catch (error: any) {
+      console.error("Error fetching user models:", error);
+      throw error;
+    }
+  }
+
+  async setPreferredModel(modelId: string): Promise<{ message: string; preferred_model: string }> {
+    if (!this.tokenValid()) {
+      throw new Error('Not authenticated');
+    }
+    const url = `${this.apiBaseUrl}/users/preferences/model`;
+    const headers = {
+      Authorization: `Bearer ${this.authToken}`,
+      'Content-Type': 'application/json',
+    };
+    const payload = { model_id: modelId };
+    const response = await axios.post(url, payload, { headers });
+    if (response.status === 200) {
+      return response.data;
+    } else if (response.status === 401) {
+      this.clearJwt();
+      throw new Error('Session expired or invalid. Please log in again.');
+    } else {
+      throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
+    }
+  }
+
+  async clearPreferredModel(): Promise<{ message: string }> {
+    if (!this.tokenValid()) {
+      throw new Error('Not authenticated');
+    }
+    const url = `${this.apiBaseUrl}/users/preferences/model`;
+    const headers = {
+      Authorization: `Bearer ${this.authToken}`,
+      'Content-Type': 'application/json',
+    };
+    const response = await axios.delete(url, { headers });
     if (response.status === 200) {
       return response.data;
     } else if (response.status === 401) {

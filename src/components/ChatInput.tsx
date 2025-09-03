@@ -9,6 +9,7 @@ import { Send, Loader2, Shield, Grid, Wand2 } from "lucide-react";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { useTheme } from "./ThemeProvider";
 import { PromptSuggestionsDialog } from "./PromptSuggestionsDialog";
+import { ModelSelector } from "./ModelSelector";
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
@@ -21,6 +22,7 @@ interface ChatInputProps {
   redactionEnabled?: boolean;
   onRedactionToggle?: (enabled: boolean) => void;
   client?: any;
+  onModelChange?: (modelId: string | null, usePreferred: boolean) => void;
 }
 
 interface AxisValues {
@@ -32,7 +34,7 @@ interface AxisValues {
 
 export const ChatInput = ({ 
   onSendMessage, 
-  isLoading, 
+  isLoading,
   placeholder = "Type your message for plagiarism and compliance check...",
   complianceEnabled = true,
   onComplianceToggle,
@@ -40,7 +42,8 @@ export const ChatInput = ({
   onCpChange,
   redactionEnabled = false,
   onRedactionToggle,
-  client
+  client,
+  onModelChange
 }: ChatInputProps) => {
   const [message, setMessage] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -161,8 +164,10 @@ export const ChatInput = ({
         
         {/* Controls Row */}
         <div className="flex items-center justify-between gap-4">
-          {/* Left side - ControlGrid Button and Popover */}
-          <div className="flex flex-col flex-1 max-w-xs">
+          {/* Left side - ControlGrid and Model Selector */}
+          <div className="flex items-end gap-3">
+            {/* ControlGrid Button and Popover */}
+            <div className="flex flex-col flex-1 max-w-xs">
             <Popover>
               <PopoverTrigger asChild>
             <div className="flex items-center gap-2">
@@ -284,6 +289,13 @@ export const ChatInput = ({
             </div>
               </PopoverContent>
             </Popover>
+            </div>
+            
+            {/* Model Selector - positioned after ControlGrid */}
+            <ModelSelector 
+              client={client}
+              onModelChange={onModelChange}
+            />
           </div>
 
           {/* Right side - Compliance Toggle, Redaction Toggle, and Send Button */}
