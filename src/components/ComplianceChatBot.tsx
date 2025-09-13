@@ -366,7 +366,10 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
     }
   };
 
-  const handleClearChat = () => {
+  const handleClearChat = async () => {
+    if (client) {
+      await client.clearChat();
+    }
     setMessages([]);
     toast.success("Chat history cleared");
   };

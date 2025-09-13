@@ -31,6 +31,25 @@ export class BrowserGuideraClient {
     return !!this.authToken && !!this.tokenExp && this.tokenExp > Date.now() / 1000;
   }
 
+  private saveSessionId(sessionId: string) {
+    const expirationTime = Date.now() + 30 * 60 * 1000;
+    localStorage.setItem("guidera_session_id", sessionId);
+    localStorage.setItem("guidera_session_exp", expirationTime.toString());
+  }
+  private getSessionId(): string | undefined {
+    const sessionId = localStorage.getItem("guidera_session_id");
+    const sessionExp = Number(localStorage.getItem("guidera_session_exp") || "0");
+    if (!sessionId || Date.now() > sessionExp) {
+      this.clearSessionId();
+      return undefined;
+    }
+    return sessionId;
+  }
+  private clearSessionId() {
+    localStorage.removeItem("guidera_session_id");
+    localStorage.removeItem("guidera_session_exp");
+  }
+
   async login(email: string, password: string): Promise<string> {
     const loginUrl = `${this.apiBaseUrl}/users/login`;
     const loginData = { email, password };
@@ -61,9 +80,22 @@ export class BrowserGuideraClient {
     controlgrid: number = 0.5,
     usePreferredModel: boolean = true
   ): Promise<any> {
-    if (!this.tokenValid()) {
-      throw new Error('Not authenticated');
+    if (!this.tokenValid()) throw new Error('Not authenticated');
+  
+    // Check session expiration explicitly using UTC milliseconds
+    const sessionId = localStorage.getItem("guidera_session_id");
+    const sessionExpStr = localStorage.getItem("guidera_session_exp");
+    const sessionExp = sessionExpStr ? Number(sessionExpStr) : 0;
+    let currentSessionId = "";
+  
+    if (sessionId && Date.now() < sessionExp) {
+      // Session is still valid
+      currentSessionId = sessionId;
+    } else {
+      // Session expired or missing - clear storage to force new session
+      this.clearSessionId();
     }
+  
     const generateUrl = `${this.apiBaseUrl}/generate`;
     const headers = {
       Authorization: `Bearer ${this.authToken}`,
@@ -71,14 +103,20 @@ export class BrowserGuideraClient {
     };
     const requestData = {
       prompt,
+      session_id: currentSessionId,
       cp_tradeoff_parameter: cpTradeoffParameter,
       controlgrid: controlgrid,
       compliance_enabled: complianceEnabled,
       redaction_enabled: redactionEnabled,
-                  use_preferred_model: usePreferredModel,
+      use_preferred_model: usePreferredModel,
     };
+  
     const response = await axios.post(generateUrl, requestData, { headers });
     if (response.status === 200) {
+      if (response.data.session_id) {
+        // Update session_id and reset expiration for 30 mins from now
+        this.saveSessionId(response.data.session_id);
+      }
       return response.data;
     } else if (response.status === 401) {
       this.clearJwt();
@@ -87,6 +125,7 @@ export class BrowserGuideraClient {
       throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
     }
   }
+  
 
   async getSuggestions(prompt: string): Promise<string[]> {
     if (!this.tokenValid()) {
@@ -154,6 +193,24 @@ export class BrowserGuideraClient {
     } else {
       throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
     }
+  }
+
+  // CLEAR SESSION & CHAT
+  async clearChat(): Promise<void> {
+    const sessionId = this.getSessionId();
+    if (!sessionId) {
+      this.clearSessionId();
+      return;
+    }
+    const deleteUrl = `${this.apiBaseUrl}/sessions/${sessionId}`;
+    const headers = {
+      Authorization: `Bearer ${this.authToken}`,
+      'Content-Type': 'application/json'
+    };
+    try {
+      await axios.delete(deleteUrl, { headers });
+    } catch (error) {}
+    this.clearSessionId();
   }
 
   async getAnalytics(): Promise<any> {

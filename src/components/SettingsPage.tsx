@@ -144,45 +144,12 @@ export const SettingsPage = () => {
                     </div>
                     <div>
                       <label className="block mb-2">
-                        <span className="font-medium">Phone Number</span>
-                        <Input
-                          value={userProfile.phone}
-                          onChange={e => updateUserProfile({ phone: e.target.value })}
-                          className="mt-1"
-                          placeholder="Enter your phone number"
-                        />
-                      </label>
-                    </div>
-                    <div>
-                      <label className="block mb-2">
                         <span className="font-medium">Company</span>
                         <Input
                           value={userProfile.company}
                           onChange={e => updateUserProfile({ company: e.target.value })}
                           className="mt-1"
                           placeholder="Enter your company"
-                        />
-                      </label>
-                    </div>
-                    <div>
-                      <label className="block mb-2">
-                        <span className="font-medium">Job Title</span>
-                        <Input
-                          value={userProfile.role}
-                          onChange={e => updateUserProfile({ role: e.target.value })}
-                          className="mt-1"
-                          placeholder="Enter your job title"
-                        />
-                      </label>
-                    </div>
-                    <div>
-                      <label className="block mb-2">
-                        <span className="font-medium">Department</span>
-                        <Input
-                          value={userProfile.department}
-                          onChange={e => updateUserProfile({ department: e.target.value })}
-                          className="mt-1"
-                          placeholder="Enter your department"
                         />
                       </label>
                     </div>
@@ -235,13 +202,6 @@ export const SettingsPage = () => {
                         <p className="font-medium">{userProfile.email}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                      <Smartphone className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Phone</p>
-                        <p className="font-medium">{userProfile.phone}</p>
-                      </div>
-                    </div>
                   </div>
                   <div className="space-y-4">
                     <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
@@ -249,20 +209,6 @@ export const SettingsPage = () => {
                       <div>
                         <p className="text-sm text-muted-foreground">Company</p>
                         <p className="font-medium">{userProfile.company}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                      <Settings2 className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Role</p>
-                        <p className="font-medium">{userProfile.role}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                      <User className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Department</p>
-                        <p className="font-medium">{userProfile.department}</p>
                       </div>
                     </div>
                   </div>
