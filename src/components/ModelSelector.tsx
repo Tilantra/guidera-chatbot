@@ -542,7 +542,7 @@ export const ModelSelector = ({ client, onModelChange }: ModelSelectorProps) => 
           <ChevronDown className="w-4 h-4 opacity-50" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-[280px]" align="start">
+      <DropdownMenuContent className="w-[280px]" align="start" side="top" style={{ maxHeight: '200px', overflowY: 'auto' }}>
         {/* Auto option */}
         <DropdownMenuItem onClick={() => handleModelSelect("auto")}>
           <div className="flex items-center gap-2 w-full">

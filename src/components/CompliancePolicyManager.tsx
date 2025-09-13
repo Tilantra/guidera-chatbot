@@ -266,7 +266,7 @@ export const CompliancePolicyManager = ({ complianceEnabled = true, client, isAc
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
           {policies.map((policy) => (
             <Card key={policy.id} className="bg-gradient-to-br from-card to-secondary/5 border-0 shadow-lg hover:shadow-xl transition-all duration-300 group">
               <CardHeader className="pb-3">
