@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = 'https://139.59.5.84';
+const BASE_URL = 'https://backend.tilantra.com';
 
 export class BrowserGuideraClient {
   private apiBaseUrl: string;
