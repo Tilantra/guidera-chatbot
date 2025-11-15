@@ -136,7 +136,7 @@ export const ChatInput = ({
   const currentColors = theme === 'dark' ? DARK_AXIS_COLORS : AXIS_COLORS;
 
   return (
-    <Card className="p-4 shadow-card border-border/50 bg-card">
+    <Card className="p-4 bg-card">
       <form onSubmit={handleSubmit} className="space-y-3">
         <div className="relative">
           <Textarea
@@ -144,7 +144,7 @@ export const ChatInput = ({
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
-            className="min-h-[80px] resize-none border-border/50 focus:border-primary/50 transition-colors pr-12"
+            className="flex-1 min-h-[120px] resize-none border-none bg-transparent px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
             disabled={isLoading}
           />
           {client && (

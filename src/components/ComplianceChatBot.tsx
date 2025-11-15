@@ -441,7 +441,7 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
         
         {/* Tabs Content - Only when NOT in settings */}
         {activeTab !== 'settings' && (
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
             <TabsList className="grid w-full grid-cols-3 sticky top-0 z-20 bg-background/95 border-b border-border shadow-sm">
               <TabsTrigger value="chat" className="flex items-center gap-2">
                 <MessageSquare className="h-4 w-4" />
@@ -506,7 +506,7 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
             </div>
 
             {/* Chat Input */}
-            <div className="py-4 sticky bottom-0 z-20 bg-background/95 border-t border-border shadow-sm">
+            <div className="py-4 sticky bottom-0 z-20 bg-background/95 shadow-sm">
               <ChatInput 
                 onSendMessage={handleSendMessage}
                 isLoading={isLoading}
@@ -524,9 +524,7 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
               />
             </div>
           </TabsContent>
-
-
-          <TabsContent value="policies" className="flex flex-col h-full">
+          <TabsContent value="policies" className={`flex flex-col ${activeTab === "policies" ? "h-full" : ""}`}>
             <CompliancePolicyManager client={client} isActive={activeTab === "policies"} />
           </TabsContent>
           <TabsContent value="dashboard" className="flex-1 flex flex-col">

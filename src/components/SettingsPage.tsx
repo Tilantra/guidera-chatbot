@@ -14,7 +14,7 @@ const sidebarItems = [
   { key: "profile", label: "Profile", icon: <User className="h-5 w-5" /> },
   { key: "api", label: "API Keys", icon: <Key className="h-5 w-5" /> },
   { key: "theme", label: "Themes", icon: <Palette className="h-5 w-5" /> },
-  { key: "credits", label: "Credits", icon: <CreditCard className="h-5 w-5" /> },
+  // { key: "credits", label: "Credits", icon: <CreditCard className="h-5 w-5" /> },
   { key: "notifications", label: "Notifications", icon: <Bell className="h-5 w-5" /> },
   { key: "security", label: "Security", icon: <Shield className="h-5 w-5" /> },
 ];

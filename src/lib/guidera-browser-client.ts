@@ -213,25 +213,25 @@ export class BrowserGuideraClient {
     this.clearSessionId();
   }
 
-  async getAnalytics(): Promise<any> {
+  async getAnalytics(params?: { granularity?: string; time_range?: string }): Promise<any> {
     if (!this.tokenValid()) {
-      throw new Error('Not authenticated');
+      throw new Error("Not authenticated");
     }
+  
     const url = `${this.apiBaseUrl}/users/analytics`;
     const headers = {
       Authorization: `Bearer ${this.authToken}`,
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     };
-    const response = await axios.get(url, { headers });
-    if (response.status === 200) {
-      return response.data;
-    } else if (response.status === 401) {
-      this.clearJwt();
-      throw new Error('Session expired or invalid. Please log in again.');
-    } else {
-      throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
-    }
+  
+    const response = await axios.get(url, {
+      headers,
+      params, // <-- pass granularity + time_range
+    });
+  
+    return response.data;
   }
+  
 
   async getPolicies(): Promise<{ input_policies: string[]; output_policies: string[] }> {
     if (!this.tokenValid()) {
