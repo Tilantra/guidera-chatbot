@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { 
+import {
   Plus, Shield, Trash, FileText, Lock, Eye, EyeOff, RefreshCw,
   CheckCircle
 } from "lucide-react";
@@ -43,17 +43,26 @@ export const CompliancePolicyManager = ({ complianceEnabled = true, client, isAc
     try {
       const data = await client.getPolicies();
       console.log('Fetched policies:', data); // DEBUG
+      // Robust description extraction
+      const extractDescription = (item: any): string => {
+        if (typeof item === 'string') return item;
+        if (item && typeof item === 'object') {
+          return item.description || item.content || item.text || JSON.stringify(item);
+        }
+        return '';
+      };
+
       // Map input and output policies to unified array
-      const inputPolicies = (data.input_policies || []).map((desc: string, idx: number) => ({
+      const inputPolicies = (data.input_policies || []).map((item: any, idx: number) => ({
         id: `input-${idx}`,
         name: 'Input Policy',
-        description: desc,
+        description: extractDescription(item),
         type: 'input',
       }));
-      const outputPolicies = (data.output_policies || []).map((desc: string, idx: number) => ({
+      const outputPolicies = (data.output_policies || []).map((item: any, idx: number) => ({
         id: `output-${idx}`,
         name: 'Output Policy',
-        description: desc,
+        description: extractDescription(item),
         type: 'output',
       }));
       const allPolicies = [...inputPolicies, ...outputPolicies];
@@ -272,11 +281,10 @@ export const CompliancePolicyManager = ({ complianceEnabled = true, client, isAc
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className={`p-2 rounded-lg ${
-                      policy.type === 'input' 
-                        ? 'bg-purple-100 dark:bg-purple-950/30' 
+                    <div className={`p-2 rounded-lg ${policy.type === 'input'
+                        ? 'bg-purple-100 dark:bg-purple-950/30'
                         : 'bg-green-100 dark:bg-green-950/30'
-                    }`}>
+                      }`}>
                       {policy.type === 'input' ? (
                         <Eye className="h-4 w-4 text-purple-600" />
                       ) : (
