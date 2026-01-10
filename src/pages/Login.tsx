@@ -30,7 +30,7 @@ export default function Login() {
     };
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-[#F8FAFC] p-6 lg:p-12 relative overflow-hidden">
+        <div className="flex min-h-screen items-center justify-center bg-[#F8FAFC] dark:bg-slate-950 p-6 lg:p-12 relative overflow-hidden">
             {/* Background decoration */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600"></div>
             <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-50 rounded-full blur-3xl opacity-50"></div>
@@ -43,50 +43,50 @@ export default function Login() {
                         <div className="inline-block px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100">
                             <span className="text-sm font-bold tracking-wider text-blue-600 uppercase">Guidera</span>
                         </div>
-                        <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight text-gray-900 leading-[1.1]">
+                        <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight text-gray-900 dark:text-white leading-[1.1]">
                             Integrated <br />
-                            <span className="text-blue-600">AI Platform</span>
+                            <span className="text-blue-600 dark:text-blue-500">AI Platform</span>
                         </h1>
-                        <p className="text-xl text-gray-600 max-w-xl leading-relaxed">
+                        <p className="text-xl text-gray-600 dark:text-slate-400 max-w-xl leading-relaxed">
                             The intelligent control layer for modern AI systems. Optimize spend, ensure compliance, and accelerate deployment with one unified platform.
                         </p>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
                         <div className="flex items-start gap-3">
-                            <div className="mt-1 p-2 rounded-lg bg-white shadow-sm border border-gray-100">
-                                <Shield className="h-5 w-5 text-blue-600" />
+                            <div className="mt-1 p-2 rounded-lg bg-white dark:bg-slate-900 shadow-sm border border-gray-100 dark:border-slate-800">
+                                <Shield className="h-5 w-5 text-blue-600 dark:text-blue-500" />
                             </div>
                             <div>
-                                <h3 className="font-bold text-gray-900">Security First</h3>
-                                <p className="text-sm text-gray-500">Enterprise-grade security and compliance built-in.</p>
+                                <h3 className="font-bold text-gray-900 dark:text-white">Security First</h3>
+                                <p className="text-sm text-gray-500 dark:text-slate-400">Enterprise-grade security and compliance built-in.</p>
                             </div>
                         </div>
                         <div className="flex items-start gap-3">
-                            <div className="mt-1 p-2 rounded-lg bg-white shadow-sm border border-gray-100">
-                                <Zap className="h-5 w-5 text-blue-600" />
+                            <div className="mt-1 p-2 rounded-lg bg-white dark:bg-slate-900 shadow-sm border border-gray-100 dark:border-slate-800">
+                                <Zap className="h-5 w-5 text-blue-600 dark:text-blue-500" />
                             </div>
                             <div>
-                                <h3 className="font-bold text-gray-900">Fast Deployment</h3>
-                                <p className="text-sm text-gray-500">Go from development to production in minutes.</p>
+                                <h3 className="font-bold text-gray-900 dark:text-white">Fast Deployment</h3>
+                                <p className="text-sm text-gray-500 dark:text-slate-400">Go from development to production in minutes.</p>
                             </div>
                         </div>
                         <div className="flex items-start gap-3">
-                            <div className="mt-1 p-2 rounded-lg bg-white shadow-sm border border-gray-100">
-                                <Lock className="h-5 w-5 text-blue-600" />
+                            <div className="mt-1 p-2 rounded-lg bg-white dark:bg-slate-900 shadow-sm border border-gray-100 dark:border-slate-800">
+                                <Lock className="h-5 w-5 text-blue-600 dark:text-blue-500" />
                             </div>
                             <div>
-                                <h3 className="font-bold text-gray-900">Role Based Access</h3>
-                                <p className="text-sm text-gray-500">Granular control over models and team permissions.</p>
+                                <h3 className="font-bold text-gray-900 dark:text-white">Role Based Access</h3>
+                                <p className="text-sm text-gray-500 dark:text-slate-400">Granular control over models and team permissions.</p>
                             </div>
                         </div>
                         <div className="flex items-start gap-3">
-                            <div className="mt-1 p-2 rounded-lg bg-white shadow-sm border border-gray-100">
-                                <Globe className="h-5 w-5 text-blue-600" />
+                            <div className="mt-1 p-2 rounded-lg bg-white dark:bg-slate-900 shadow-sm border border-gray-100 dark:border-slate-800">
+                                <Globe className="h-5 w-5 text-blue-600 dark:text-blue-500" />
                             </div>
                             <div>
-                                <h3 className="font-bold text-gray-900">Global Scale</h3>
-                                <p className="text-sm text-gray-500">Standardize AI across your entire organization.</p>
+                                <h3 className="font-bold text-gray-900 dark:text-white">Global Scale</h3>
+                                <p className="text-sm text-gray-500 dark:text-slate-400">Standardize AI across your entire organization.</p>
                             </div>
                         </div>
                     </div>
@@ -94,10 +94,10 @@ export default function Login() {
 
                 {/* Right Side: Form */}
                 <div className="flex justify-center lg:justify-end">
-                    <Card className="w-full max-w-md border border-gray-100 shadow-2xl bg-white/95 backdrop-blur-xl">
+                    <Card className="w-full max-w-md border border-gray-100 dark:border-slate-800 shadow-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl">
                         <CardHeader className="space-y-1 pt-8">
-                            <CardTitle className="text-3xl font-bold text-center">Welcome back</CardTitle>
-                            <CardDescription className="text-center text-base">
+                            <CardTitle className="text-3xl font-bold text-center dark:text-white">Welcome back</CardTitle>
+                            <CardDescription className="text-center text-base dark:text-slate-400">
                                 Enter your credentials to access your dashboard
                             </CardDescription>
                         </CardHeader>
@@ -112,12 +112,12 @@ export default function Login() {
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         required
-                                        className="bg-gray-50/50 border-gray-200 focus:ring-2 focus:ring-blue-500 py-6"
+                                        className="bg-gray-50/50 dark:bg-slate-950/50 border-gray-200 dark:border-slate-800 focus:ring-2 focus:ring-blue-500 py-6 dark:text-white dark:placeholder:text-slate-500"
                                     />
                                 </div>
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between">
-                                        <Label htmlFor="password">Password</Label>
+                                        <Label htmlFor="password" className="dark:text-slate-200">Password</Label>
                                     </div>
                                     <Input
                                         id="password"
@@ -126,7 +126,7 @@ export default function Login() {
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         required
-                                        className="bg-gray-50/50 border-gray-200 focus:ring-2 focus:ring-blue-500 py-6"
+                                        className="bg-gray-50/50 dark:bg-slate-950/50 border-gray-200 dark:border-slate-800 focus:ring-2 focus:ring-blue-500 py-6 dark:text-white dark:placeholder:text-slate-500"
                                     />
                                 </div>
 

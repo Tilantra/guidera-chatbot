@@ -44,7 +44,7 @@ export default function Register() {
     };
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-[#F8FAFC] p-6 lg:p-12 relative overflow-hidden">
+        <div className="flex min-h-screen items-center justify-center bg-[#F8FAFC] dark:bg-slate-950 p-6 lg:p-12 relative overflow-hidden">
             {/* Background decoration */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600"></div>
             <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-50 rounded-full blur-3xl opacity-50"></div>
@@ -57,32 +57,32 @@ export default function Register() {
                         <div className="inline-block px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100">
                             <span className="text-sm font-bold tracking-wider text-blue-600 uppercase">Guidera Enterprise</span>
                         </div>
-                        <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight text-gray-900 leading-[1.1]">
+                        <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight text-gray-900 dark:text-white leading-[1.1]">
                             Scale your <br />
-                            <span className="text-blue-600">AI Dreams</span>
+                            <span className="text-blue-600 dark:text-blue-500">AI Dreams</span>
                         </h1>
-                        <p className="text-xl text-gray-600 max-w-xl leading-relaxed">
+                        <p className="text-xl text-gray-600 dark:text-slate-400 max-w-xl leading-relaxed">
                             The intelligent control layer for modern AI systems. Join thousands of developers optimizing their AI stack.
                         </p>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
                         <div className="flex items-start gap-3">
-                            <div className="mt-1 p-2 rounded-lg bg-white shadow-sm border border-gray-100">
-                                <Shield className="h-5 w-5 text-blue-600" />
+                            <div className="mt-1 p-2 rounded-lg bg-white dark:bg-slate-900 shadow-sm border border-gray-100 dark:border-slate-800">
+                                <Shield className="h-5 w-5 text-blue-600 dark:text-blue-500" />
                             </div>
                             <div>
-                                <h3 className="font-bold text-gray-900">Compliance Ready</h3>
-                                <p className="text-sm text-gray-500">Automatic policy enforcement across all models.</p>
+                                <h3 className="font-bold text-gray-900 dark:text-white">Compliance Ready</h3>
+                                <p className="text-sm text-gray-500 dark:text-slate-400">Automatic policy enforcement across all models.</p>
                             </div>
                         </div>
                         <div className="flex items-start gap-3">
-                            <div className="mt-1 p-2 rounded-lg bg-white shadow-sm border border-gray-100">
-                                <Zap className="h-5 w-5 text-blue-600" />
+                            <div className="mt-1 p-2 rounded-lg bg-white dark:bg-slate-900 shadow-sm border border-gray-100 dark:border-slate-800">
+                                <Zap className="h-5 w-5 text-blue-600 dark:text-blue-500" />
                             </div>
                             <div>
-                                <h3 className="font-bold text-gray-900">Optimization</h3>
-                                <p className="text-sm text-gray-500">Reduce token spend by up to 40% with smart routing.</p>
+                                <h3 className="font-bold text-gray-900 dark:text-white">Optimization</h3>
+                                <p className="text-sm text-gray-500 dark:text-slate-400">Reduce token spend by up to 40% with smart routing.</p>
                             </div>
                         </div>
                     </div>
@@ -90,10 +90,10 @@ export default function Register() {
 
                 {/* Right Side: Form */}
                 <div className="flex justify-center lg:justify-end">
-                    <Card className="w-full max-w-md border border-gray-100 shadow-2xl bg-white/95 backdrop-blur-xl">
+                    <Card className="w-full max-w-md border border-gray-100 dark:border-slate-800 shadow-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl">
                         <CardHeader className="space-y-1 pt-8 text-center">
-                            <CardTitle className="text-3xl font-bold">Create account</CardTitle>
-                            <CardDescription className="text-base">
+                            <CardTitle className="text-3xl font-bold dark:text-white">Create account</CardTitle>
+                            <CardDescription className="text-base dark:text-slate-400">
                                 Join Guidera and start optimizing today
                             </CardDescription>
                         </CardHeader>
@@ -101,31 +101,31 @@ export default function Register() {
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="username">Username</Label>
+                                        <Label htmlFor="username" className="dark:text-slate-200">Username</Label>
                                         <Input
                                             id="username"
                                             placeholder="johndoe"
                                             value={formData.username}
                                             onChange={handleChange}
                                             required
-                                            className="bg-gray-50/50 border-gray-200"
+                                            className="bg-gray-50/50 dark:bg-slate-950/50 border-gray-200 dark:border-slate-800 dark:text-white dark:placeholder:text-slate-500"
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="full_name">Full Name</Label>
+                                        <Label htmlFor="full_name" className="dark:text-slate-200">Full Name</Label>
                                         <Input
                                             id="full_name"
                                             placeholder="John Doe"
                                             value={formData.full_name}
                                             onChange={handleChange}
                                             required
-                                            className="bg-gray-50/50 border-gray-200"
+                                            className="bg-gray-50/50 dark:bg-slate-950/50 border-gray-200 dark:border-slate-800 dark:text-white dark:placeholder:text-slate-500"
                                         />
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="email">Work Email</Label>
+                                    <Label htmlFor="email" className="dark:text-slate-200">Work Email</Label>
                                     <Input
                                         id="email"
                                         type="email"
@@ -133,24 +133,24 @@ export default function Register() {
                                         value={formData.email}
                                         onChange={handleChange}
                                         required
-                                        className="bg-gray-50/50 border-gray-200 py-6"
+                                        className="bg-gray-50/50 dark:bg-slate-950/50 border-gray-200 dark:border-slate-800 py-6 dark:text-white dark:placeholder:text-slate-500"
                                     />
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="company">Company Name</Label>
+                                    <Label htmlFor="company" className="dark:text-slate-200">Company Name</Label>
                                     <Input
                                         id="company"
                                         placeholder="Acme Corp"
                                         value={formData.company}
                                         onChange={handleChange}
                                         required
-                                        className="bg-gray-50/50 border-gray-200 py-6"
+                                        className="bg-gray-50/50 dark:bg-slate-950/50 border-gray-200 dark:border-slate-800 py-6 dark:text-white dark:placeholder:text-slate-500"
                                     />
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="password">Password</Label>
+                                    <Label htmlFor="password" className="dark:text-slate-200">Password</Label>
                                     <Input
                                         id="password"
                                         type="password"
@@ -158,7 +158,7 @@ export default function Register() {
                                         value={formData.password}
                                         onChange={handleChange}
                                         required
-                                        className="bg-gray-50/50 border-gray-200 py-6"
+                                        className="bg-gray-50/50 dark:bg-slate-950/50 border-gray-200 dark:border-slate-800 py-6 dark:text-white dark:placeholder:text-slate-500"
                                     />
                                 </div>
 
