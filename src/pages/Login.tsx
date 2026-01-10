@@ -71,24 +71,6 @@ export default function Login() {
                                 <p className="text-sm text-gray-500 dark:text-slate-400">Go from development to production in minutes.</p>
                             </div>
                         </div>
-                        <div className="flex items-start gap-3">
-                            <div className="mt-1 p-2 rounded-lg bg-white dark:bg-slate-900 shadow-sm border border-gray-100 dark:border-slate-800">
-                                <Lock className="h-5 w-5 text-blue-600 dark:text-blue-500" />
-                            </div>
-                            <div>
-                                <h3 className="font-bold text-gray-900 dark:text-white">Role Based Access</h3>
-                                <p className="text-sm text-gray-500 dark:text-slate-400">Granular control over models and team permissions.</p>
-                            </div>
-                        </div>
-                        <div className="flex items-start gap-3">
-                            <div className="mt-1 p-2 rounded-lg bg-white dark:bg-slate-900 shadow-sm border border-gray-100 dark:border-slate-800">
-                                <Globe className="h-5 w-5 text-blue-600 dark:text-blue-500" />
-                            </div>
-                            <div>
-                                <h3 className="font-bold text-gray-900 dark:text-white">Global Scale</h3>
-                                <p className="text-sm text-gray-500 dark:text-slate-400">Standardize AI across your entire organization.</p>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -96,9 +78,9 @@ export default function Login() {
                 <div className="flex justify-center lg:justify-end">
                     <Card className="w-full max-w-md border border-gray-100 dark:border-slate-800 shadow-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl">
                         <CardHeader className="space-y-1 pt-8">
-                            <CardTitle className="text-3xl font-bold text-center dark:text-white">Welcome back</CardTitle>
+                            <CardTitle className="text-3xl font-bold text-center dark:text-white">Welcome!</CardTitle>
                             <CardDescription className="text-center text-base dark:text-slate-400">
-                                Enter your credentials to access your dashboard
+                                Enter your credentials to access the chatbot.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="pb-8">

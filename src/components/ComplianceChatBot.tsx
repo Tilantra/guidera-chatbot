@@ -20,7 +20,7 @@ import { SettingsPage } from "./SettingsPage";
 const mockApiCall = async (message: string): Promise<Omit<ChatResponse, 'id' | 'type' | 'timestamp'>> => {
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 2000));
-  
+
   // Mock response with different scenarios
   const scenarios = [
     // Compliance passed scenario
@@ -42,7 +42,7 @@ const mockApiCall = async (message: string): Promise<Omit<ChatResponse, 'id' | '
             similarity: 8
           },
           {
-            url: "https://research.org/paper2", 
+            url: "https://research.org/paper2",
             title: "Technology Standards Documentation",
             similarity: 4
           }
@@ -57,7 +57,7 @@ const mockApiCall = async (message: string): Promise<Omit<ChatResponse, 'id' | '
             description: "No personal information detected"
           },
           {
-            rule: "Content Guidelines", 
+            rule: "Content Guidelines",
             status: 'passed' as const,
             description: "Content adheres to community standards"
           },
@@ -120,7 +120,7 @@ const mockApiCall = async (message: string): Promise<Omit<ChatResponse, 'id' | '
           },
           {
             url: "https://news.com/article",
-            title: "Recent News Article", 
+            title: "Recent News Article",
             similarity: 13
           }
         ]
@@ -147,11 +147,11 @@ const mockApiCall = async (message: string): Promise<Omit<ChatResponse, 'id' | '
       }
     }
   ];
-  
+
   // Randomly select a scenario or choose based on message content
-  const scenarioIndex = message.toLowerCase().includes('fail') ? 1 : 
-                       message.toLowerCase().includes('warn') ? 2 : 0;
-  
+  const scenarioIndex = message.toLowerCase().includes('fail') ? 1 :
+    message.toLowerCase().includes('warn') ? 2 : 0;
+
   return scenarios[scenarioIndex];
 };
 
@@ -164,7 +164,7 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
   const [redactionEnabled, setRedactionEnabled] = useState(false);
   const [cpValue, setCpValue] = useState<[number, number]>([0.5, 0.5]);
   const [loadingMessageId, setLoadingMessageId] = useState<string | null>(null);
-  
+
   // Model preference state
   const [usePreferredModel, setUsePreferredModel] = useState<boolean>(true);
   const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
@@ -201,7 +201,7 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
       if (msg.performanceMetrics) {
         totalCostSaved += msg.performanceMetrics.costSaved;
         cumulativeSavings += msg.performanceMetrics.costSaved;
-        
+
         costSavingsOverTime.push({
           time: `Request ${index + 1}`,
           savings: msg.performanceMetrics.costSaved,
@@ -258,7 +258,7 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
     };
 
     setMessages(prev => [...prev, userMessage]);
-    
+
     // Add loading assistant message
     const loadingMessageId = crypto.randomUUID();
     const loadingMessage: ChatResponse = {
@@ -267,7 +267,7 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
       content: '',
       timestamp: new Date()
     };
-    
+
     setMessages(prev => [...prev, loadingMessage]);
     setIsLoading(true);
     setLoadingMessageId(loadingMessageId);
@@ -340,10 +340,10 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
         content
       };
 
-      setMessages(prev => prev.map(msg => 
+      setMessages(prev => prev.map(msg =>
         msg.id === loadingMessageId ? assistantMessage : msg
       ));
-      
+
       // Show toast based on compliance status (only if compliance is enabled)
       if (complianceEnabled) {
         if (response.complianceCheck?.status === 'failed') {
@@ -354,7 +354,7 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
           toast.success("Content passed all compliance checks");
         }
       }
-      
+
     } catch (error) {
       // Remove loading message on error
       setMessages(prev => prev.filter(msg => msg.id !== loadingMessageId));
@@ -386,11 +386,11 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
             <div>
               <h1 className="text-xl font-bold text-foreground">Guidera ChatBot</h1>
               <p className="text-sm text-muted-foreground">
-              Enterprise AI Orchestration. Simplified
+                Enterprise AI Orchestration. Simplified
               </p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={handleClearChat}>
               <RotateCcw className="h-4 w-4" />
@@ -399,9 +399,9 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <div className="ml-2 cursor-pointer">
-                  <Avatar 
-                    style={userProfile.avatarStyle} 
-                    seed={userProfile.avatarSeed} 
+                  <Avatar
+                    style={userProfile.avatarStyle}
+                    seed={userProfile.avatarSeed}
                     size={36}
                     className="border-2 border-border hover:border-primary transition-colors"
                   />
@@ -438,99 +438,110 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
             </div>
           </div>
         )}
-        
+
         {/* Tabs Content - Only when NOT in settings */}
         {activeTab !== 'settings' && (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-            <TabsList className="grid w-full grid-cols-3 sticky top-0 z-20 bg-background/95 border-b border-border shadow-sm">
-              <TabsTrigger value="chat" className="flex items-center gap-2">
-                <MessageSquare className="h-4 w-4" />
-                Chat
-              </TabsTrigger>
-              <TabsTrigger value="policies" className="flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4" />
-                Policies
-              </TabsTrigger>
-              <TabsTrigger value="dashboard" className="flex items-center gap-2">
-                <BarChart3 className="h-4 w-4" />
-                Dashboard
-              </TabsTrigger>
-            </TabsList>
-
-          <TabsContent value="chat" className="flex-1 flex flex-col">
-            {/* Chat Messages */}
-            <div className="flex-1 overflow-y-auto py-4 space-y-4">
-              {messages.length === 0 ? (
-                <Card className="p-8 text-center shadow-card bg-card">
-                  <img src={GuideraLogo} alt="Guidera Logo" className="h-25 w-25 mx-auto mb-4 object-contain" />
-                  <h3 className="text-lg font-semibold mb-2 text-foreground">Welcome to Guidera ChatBot</h3>
-                  <p className="text-muted-foreground mb-6">
-                    Send a message to analyze it for plagiarism and compliance violations. 
-                    Our AI will check your content against multiple compliance standards and provide detailed feedback.
-                  </p>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                    <div className="p-3 rounded border border-border bg-secondary/50">
-                      <p className="font-medium text-foreground flex items-center gap-2 justify-center text-center mb-2">
-                        <Shield className="h-5 w-5 text-primary" />
-                        Compliance Check
-                      </p>
-                      <p className="text-muted-foreground text-center">Privacy, content guidelines, and policy validation</p>
-                    </div>
-                    <div className="p-3 rounded border border-border bg-secondary/50">
-                      <p className="font-medium text-foreground flex items-center gap-2 justify-center text-center mb-2">
-                        <Brain className="h-5 w-5 text-primary" />
-                        Plagiarism Detection
-                      </p>
-                      <p className="text-muted-foreground text-center">Source identification and similarity analysis</p>
-                    </div>
-                    <div className="p-3 rounded border border-border bg-secondary/50">
-                      <p className="font-medium text-foreground flex items-center gap-2 justify-center text-center mb-2">
-                        <Settings className="h-5 w-5 text-primary" />
-                        AI Model Info
-                      </p>
-                      <p className="text-muted-foreground text-center">Transparency in AI processing and analysis</p>
-                    </div>
-                  </div>
-                </Card>
-              ) : (
-                messages.map((message) => (
-                  <ChatMessage 
-                    key={message.id} 
-                    message={message} 
-                    isLoading={message.id === loadingMessageId && isLoading}
-                    complianceEnabled={complianceEnabled}
-                  />
-                ))
-              )}
+            <div className="pb-4 pt-2 sticky top-0 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+              <TabsList className="grid w-full grid-cols-3 h-auto p-1.5 bg-muted/50 rounded-xl border border-border/50">
+                <TabsTrigger
+                  value="chat"
+                  className="flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm hover:text-foreground/80"
+                >
+                  <MessageSquare className="h-4 w-4" />
+                  Chat
+                </TabsTrigger>
+                <TabsTrigger
+                  value="policies"
+                  className="flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm hover:text-foreground/80"
+                >
+                  <ShieldCheck className="h-4 w-4" />
+                  Policies
+                </TabsTrigger>
+                <TabsTrigger
+                  value="dashboard"
+                  className="flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm hover:text-foreground/80"
+                >
+                  <BarChart3 className="h-4 w-4" />
+                  Dashboard
+                </TabsTrigger>
+              </TabsList>
             </div>
 
-            {/* Chat Input */}
-            <div className="py-4 sticky bottom-0 z-20 bg-background/95 shadow-sm">
-              <ChatInput 
-                onSendMessage={handleSendMessage}
-                isLoading={isLoading}
-                complianceEnabled={complianceEnabled}
-                onComplianceToggle={setComplianceEnabled}
-                cpValue={cpValue}
-                onCpChange={(value) => {
-                  if (Array.isArray(value)) setCpValue(value as [number, number]);
-                  else setCpValue([value as number, cpValue[1]]);
-                }}
-                redactionEnabled={redactionEnabled}
-                onRedactionToggle={setRedactionEnabled}
-                client={client}
-                onModelChange={handleModelChange}
-              />
-            </div>
-          </TabsContent>
-          <TabsContent value="policies" className={`flex flex-col ${activeTab === "policies" ? "h-full" : ""}`}>
-            <CompliancePolicyManager client={client} isActive={activeTab === "policies"} />
-          </TabsContent>
-          <TabsContent value="dashboard" className="flex-1 flex flex-col">
-            <AnalyticsDashboard client={client} />
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="chat" className="flex-1 flex flex-col">
+              {/* Chat Messages */}
+              <div className="flex-1 overflow-y-auto py-4 space-y-4">
+                {messages.length === 0 ? (
+                  <Card className="p-8 text-center shadow-card bg-card">
+                    <img src={GuideraLogo} alt="Guidera Logo" className="h-25 w-25 mx-auto mb-4 object-contain" />
+                    <h3 className="text-lg font-semibold mb-2 text-foreground">Welcome to Guidera ChatBot</h3>
+                    <p className="text-muted-foreground mb-6">
+                      Send a message to analyze it for plagiarism and compliance violations.
+                      Our AI will check your content against multiple compliance standards and provide detailed feedback.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                      <div className="p-3 rounded border border-border bg-secondary/50">
+                        <p className="font-medium text-foreground flex items-center gap-2 justify-center text-center mb-2">
+                          <Shield className="h-5 w-5 text-primary" />
+                          Compliance Check
+                        </p>
+                        <p className="text-muted-foreground text-center">Privacy, content guidelines, and policy validation</p>
+                      </div>
+                      <div className="p-3 rounded border border-border bg-secondary/50">
+                        <p className="font-medium text-foreground flex items-center gap-2 justify-center text-center mb-2">
+                          <Brain className="h-5 w-5 text-primary" />
+                          Plagiarism Detection
+                        </p>
+                        <p className="text-muted-foreground text-center">Source identification and similarity analysis</p>
+                      </div>
+                      <div className="p-3 rounded border border-border bg-secondary/50">
+                        <p className="font-medium text-foreground flex items-center gap-2 justify-center text-center mb-2">
+                          <Settings className="h-5 w-5 text-primary" />
+                          AI Model Info
+                        </p>
+                        <p className="text-muted-foreground text-center">Transparency in AI processing and analysis</p>
+                      </div>
+                    </div>
+                  </Card>
+                ) : (
+                  messages.map((message) => (
+                    <ChatMessage
+                      key={message.id}
+                      message={message}
+                      isLoading={message.id === loadingMessageId && isLoading}
+                      complianceEnabled={complianceEnabled}
+                    />
+                  ))
+                )}
+              </div>
+
+              {/* Chat Input */}
+              <div className="py-4 sticky bottom-0 z-20 bg-background/95 shadow-sm">
+                <ChatInput
+                  onSendMessage={handleSendMessage}
+                  isLoading={isLoading}
+                  complianceEnabled={complianceEnabled}
+                  onComplianceToggle={setComplianceEnabled}
+                  cpValue={cpValue}
+                  onCpChange={(value) => {
+                    if (Array.isArray(value)) setCpValue(value as [number, number]);
+                    else setCpValue([value as number, cpValue[1]]);
+                  }}
+                  redactionEnabled={redactionEnabled}
+                  onRedactionToggle={setRedactionEnabled}
+                  client={client}
+                  onModelChange={handleModelChange}
+                />
+              </div>
+            </TabsContent>
+            <TabsContent value="policies" className={`flex flex-col ${activeTab === "policies" ? "h-full" : ""}`}>
+              <CompliancePolicyManager client={client} isActive={activeTab === "policies"} />
+            </TabsContent>
+            <TabsContent value="dashboard" className="flex-1 flex flex-col">
+              <AnalyticsDashboard client={client} />
+            </TabsContent>
+          </Tabs>
         )}
       </div>
     </div>
