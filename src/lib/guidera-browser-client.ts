@@ -72,6 +72,24 @@ export class BrowserGuideraClient {
     }
   }
 
+  async register(data: {
+    username: string;
+    email: string;
+    password: string;
+    full_name: string;
+    company: string;
+    models: string[];
+    teams: string[];
+  }): Promise<any> {
+    const registerUrl = `${this.apiBaseUrl}/users/register`;
+    const response = await axios.post(registerUrl, data);
+    if (response.status === 200 || response.status === 201) {
+      return response.data;
+    } else {
+      throw new Error(`Registration failed with status ${response.status}: ${response.statusText}`);
+    }
+  }
+
   async generate(
     prompt: string,
     cpTradeoffParameter: number = 0.7,
@@ -81,13 +99,13 @@ export class BrowserGuideraClient {
     usePreferredModel: boolean = true
   ): Promise<any> {
     if (!this.tokenValid()) throw new Error('Not authenticated');
-  
+
     // Check session expiration explicitly using UTC milliseconds
     const sessionId = localStorage.getItem("guidera_session_id");
     const sessionExpStr = localStorage.getItem("guidera_session_exp");
     const sessionExp = sessionExpStr ? Number(sessionExpStr) : 0;
     let currentSessionId = "";
-  
+
     if (sessionId && Date.now() < sessionExp) {
       // Session is still valid
       currentSessionId = sessionId;
@@ -95,7 +113,7 @@ export class BrowserGuideraClient {
       // Session expired or missing - clear storage to force new session
       this.clearSessionId();
     }
-  
+
     const generateUrl = `${this.apiBaseUrl}/generate`;
     const headers = {
       Authorization: `Bearer ${this.authToken}`,
@@ -110,7 +128,7 @@ export class BrowserGuideraClient {
       redaction_enabled: redactionEnabled,
       use_preferred_model: usePreferredModel,
     };
-  
+
     const response = await axios.post(generateUrl, requestData, { headers });
     if (response.status === 200) {
       if (response.data.session_id) {
@@ -125,7 +143,7 @@ export class BrowserGuideraClient {
       throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
     }
   }
-  
+
 
   async getSuggestions(prompt: string): Promise<string[]> {
     if (!this.tokenValid()) {
@@ -209,7 +227,7 @@ export class BrowserGuideraClient {
     };
     try {
       await axios.delete(deleteUrl, { headers });
-    } catch (error) {}
+    } catch (error) { }
     this.clearSessionId();
   }
 
@@ -217,21 +235,21 @@ export class BrowserGuideraClient {
     if (!this.tokenValid()) {
       throw new Error("Not authenticated");
     }
-  
+
     const url = `${this.apiBaseUrl}/users/analytics`;
     const headers = {
       Authorization: `Bearer ${this.authToken}`,
       "Content-Type": "application/json",
     };
-  
+
     const response = await axios.get(url, {
       headers,
       params, // <-- pass granularity + time_range
     });
-  
+
     return response.data;
   }
-  
+
 
   async getPolicies(): Promise<{ input_policies: string[]; output_policies: string[] }> {
     if (!this.tokenValid()) {
@@ -258,18 +276,18 @@ export class BrowserGuideraClient {
     if (!this.tokenValid()) {
       throw new Error('Not authenticated');
     }
-    
+
     // Use updated getUsermodels endpoint with enhanced response (models + preferences)
-    
+
     const url = `${this.apiBaseUrl}/users/getUsermodels`;
     const headers = {
       Authorization: `Bearer ${this.authToken}`,
       'Content-Type': 'application/json',
     };
-    
+
     try {
       const response = await axios.get(url, { headers });
-      
+
       if (response.status === 200) {
         // Backend now returns enhanced response with both legacy and new formats
         return {
