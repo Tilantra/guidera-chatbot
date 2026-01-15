@@ -31,7 +31,7 @@ export default function Register() {
             const client = new BrowserGuideraClient();
             await client.register({
                 ...formData,
-                models: ["openai/gpt-4o"],
+                models: ["gpt4", "llama3", "gemini2.5-flash"],
                 teams: ["**NO_TEAM**"],
             });
             await client.login(formData.email, formData.password);

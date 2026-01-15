@@ -13,7 +13,7 @@ export default function Index() {
       const token = localStorage.getItem('guidera_jwt');
       const exp = Number(localStorage.getItem('guidera_jwt_exp'));
 
-      if (token && exp > Date.now() / 1000) {
+      if (token) {
         setClient(clientInstance);
       } else {
         navigate("/login");

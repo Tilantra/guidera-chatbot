@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react"
+import { BrowserGuideraClient } from "../lib/guidera-browser-client"
 
 type Theme = "light" | "dark" | "system" | "light-high-contrast" | "dark-high-contrast" | "soft-dark"
 
@@ -13,11 +14,9 @@ type DisplaySettings = {
 
 type UserProfile = {
   name: string
+  username: string
   email: string
-  phone: string
   company: string
-  role: string
-  department: string
   timezone: string
   avatarStyle: string
   avatarSeed: string
@@ -57,12 +56,10 @@ const generateRandomAvatar = (): { style: string; seed: string } => {
 const randomAvatar = generateRandomAvatar();
 
 const initialUserProfile: UserProfile = {
-  name: "Mahika Kushwaha",
-  email: "mahika@example.com",
-  phone: "+1 (555) 123-4567",
-  company: "UKG", 
-  role: "Senior Software Engineer",
-  department: "Engineering",
+  name: "Loading...",
+  username: "",
+  email: "",
+  company: "",
   timezone: "EST",
   avatarStyle: randomAvatar.style,
   avatarSeed: randomAvatar.seed,
@@ -89,12 +86,12 @@ export function ThemeProvider({
   const [theme, setTheme] = useState<Theme>(
     () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
   )
-  
+
   const [displaySettings, setDisplaySettings] = useState<DisplaySettings>(() => {
     const stored = localStorage.getItem(`${storageKey}-display`)
     return stored ? JSON.parse(stored) : initialDisplaySettings
   })
-  
+
   const [userProfile, setUserProfile] = useState<UserProfile>(() => {
     const stored = localStorage.getItem(`${storageKey}-profile`)
     return stored ? JSON.parse(stored) : initialUserProfile
@@ -120,25 +117,25 @@ export function ThemeProvider({
 
   useEffect(() => {
     const root = window.document.documentElement
-    
+
     // Apply font size
     root.classList.remove("font-small", "font-medium", "font-large")
     root.classList.add(`font-${displaySettings.fontSize}`)
-    
+
     // Apply compact mode
     if (displaySettings.compactMode) {
       root.classList.add("compact-mode")
     } else {
       root.classList.remove("compact-mode")
     }
-    
+
     // Apply reduced motion
     if (displaySettings.reducedMotion) {
       root.classList.add("reduce-motion")
     } else {
       root.classList.remove("reduce-motion")
     }
-    
+
     // Save to localStorage
     localStorage.setItem(`${storageKey}-display`, JSON.stringify(displaySettings))
   }, [displaySettings, storageKey])
@@ -147,6 +144,28 @@ export function ThemeProvider({
     // Save user profile to localStorage
     localStorage.setItem(`${storageKey}-profile`, JSON.stringify(userProfile))
   }, [userProfile, storageKey])
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      // Basic check if token exists to avoid unnecessary 401s on login screen
+      if (!localStorage.getItem("guidera_jwt")) return;
+
+      try {
+        const client = new BrowserGuideraClient();
+        const userData = await client.getSingleUser();
+        updateUserProfile({
+          name: userData.full_name,
+          username: userData.username,
+          email: userData.email,
+          company: userData.company,
+        });
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+      }
+    };
+
+    fetchUser();
+  }, [])
 
   const updateDisplaySetting = (key: keyof DisplaySettings, value: boolean | FontSize) => {
     setDisplaySettings(prev => ({ ...prev, [key]: value }))

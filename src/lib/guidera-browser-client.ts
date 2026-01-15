@@ -28,7 +28,8 @@ export class BrowserGuideraClient {
   }
 
   private tokenValid(): boolean {
-    return !!this.authToken && !!this.tokenExp && this.tokenExp > Date.now() / 1000;
+    // Only check if token exists; let backend handle 401s for expiration
+    return !!this.authToken;
   }
 
   private saveSessionId(sessionId: string) {
@@ -58,9 +59,6 @@ export class BrowserGuideraClient {
       const result = response.data;
       const token = result.token;
       const exp = result.exp || Math.floor(Date.now() / 1000) + 2 * 3600;
-      console.log(result);
-      console.log(token);
-      console.log(exp);
       if (token) {
         this.saveJwt(token, exp);
         return token;
@@ -69,6 +67,42 @@ export class BrowserGuideraClient {
       }
     } else {
       throw new Error(`Login failed with status ${response.status}: ${response.statusText}`);
+    }
+  }
+
+  async googleAuth(
+    token: string,
+    defaults?: {
+      company?: string;
+      teams?: string[];
+      models?: string[];
+      full_name?: string;
+      username?: string;
+      email?: string;
+    }
+  ): Promise<string> {
+    const authUrl = `${this.apiBaseUrl}/users/auth/google`;
+
+    try {
+      const response = await axios.post(authUrl, { token, ...defaults });
+
+      if (response.status === 200) {
+        const result = response.data;
+        // Check for 'token' OR 'access_token' to be robust
+        const authToken = result.token || result.access_token;
+        const exp = result.exp || Math.floor(Date.now() / 1000) + 2 * 3600;
+
+        if (authToken) {
+          this.saveJwt(authToken, exp);
+          return authToken;
+        } else {
+          throw new Error('Google authentication failed: No token in response body');
+        }
+      } else {
+        throw new Error(`Google authentication failed with status ${response.status}: ${response.statusText}`);
+      }
+    } catch (error: any) {
+      throw error;
     }
   }
 
@@ -256,6 +290,26 @@ export class BrowserGuideraClient {
       throw new Error('Not authenticated');
     }
     const url = `${this.apiBaseUrl}/users/get_policies`;
+    const headers = {
+      Authorization: `Bearer ${this.authToken}`,
+      'Content-Type': 'application/json',
+    };
+    const response = await axios.get(url, { headers });
+    if (response.status === 200) {
+      return response.data;
+    } else if (response.status === 401) {
+      this.clearJwt();
+      throw new Error('Session expired or invalid. Please log in again.');
+    } else {
+      throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
+    }
+  }
+
+  async getSingleUser(): Promise<{ username: string; email: string; full_name: string; company: string }> {
+    if (!this.tokenValid()) {
+      throw new Error('Not authenticated');
+    }
+    const url = `${this.apiBaseUrl}/users/getsingleUser`;
     const headers = {
       Authorization: `Bearer ${this.authToken}`,
       'Content-Type': 'application/json',
