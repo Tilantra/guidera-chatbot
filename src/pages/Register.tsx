@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, Zap, Lock, Globe } from "lucide-react";
+import TilantraBlueLogo from "../components/assets/Tilantra_blueLOGO.png";
 
 export default function Register() {
     const [formData, setFormData] = useState({
@@ -53,16 +54,18 @@ export default function Register() {
             <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center relative z-10 text-left">
                 {/* Left Side: Info */}
                 <div className="hidden lg:block space-y-8">
-                    <div className="space-y-4">
-                        <div className="inline-block px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100">
-                            <span className="text-sm font-bold tracking-wider text-blue-600 uppercase">Guidera Enterprise</span>
+                    <div className="space-y-2">
+                        <div className="inline-block -ml-2">
+                            <img src={TilantraBlueLogo} alt="Tilantra" className="h-12 w-auto" />
                         </div>
                         <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight text-gray-900 dark:text-white leading-[1.1]">
-                            Scale your <br />
-                            <span className="text-blue-600 dark:text-blue-500">AI Dreams</span>
+                            Access both <br />
+                            <span style={{ color: '#6e4edf' }}>Guidera</span>
+                            <span className="text-black dark:text-white"> & </span>
+                            <span style={{ color: '#1a4161ff' }}>Capsule Hub</span>
                         </h1>
                         <p className="text-xl text-gray-600 dark:text-slate-400 max-w-xl leading-relaxed">
-                            The intelligent control layer for modern AI systems. Join thousands of developers optimizing their AI stack.
+                            Scale your AI dreams. The intelligent control layer for modern AI systems.
                         </p>
                     </div>
 
@@ -94,7 +97,7 @@ export default function Register() {
                         <CardHeader className="space-y-1 pt-8 text-center">
                             <CardTitle className="text-3xl font-bold dark:text-white">Create account</CardTitle>
                             <CardDescription className="text-base dark:text-slate-400">
-                                Join Guidera and start optimizing today
+                                One account for Guidera & Capsule Hub
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="pb-8">
