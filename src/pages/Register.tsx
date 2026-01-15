@@ -51,14 +51,16 @@ export default function Register() {
             <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-50 rounded-full blur-3xl opacity-50"></div>
             <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-50 rounded-full blur-3xl opacity-50"></div>
 
+            {/* Tilantra Logo - Top Left */}
+            <div className="absolute top-6 left-6 z-20">
+                <img src={TilantraBlueLogo} alt="Tilantra" className="h-12 w-auto" />
+            </div>
+
             <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center relative z-10 text-left">
                 {/* Left Side: Info */}
                 <div className="hidden lg:block space-y-8">
-                    <div className="space-y-2">
-                        <div className="inline-block -ml-2">
-                            <img src={TilantraBlueLogo} alt="Tilantra" className="h-12 w-auto" />
-                        </div>
-                        <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight text-gray-900 dark:text-white leading-[1.1]">
+                    <div className="space-y-4">
+                        <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white leading-[1.1]">
                             Access both <br />
                             <span style={{ color: '#6e4edf' }}>Guidera</span>
                             <span className="text-black dark:text-white"> & </span>

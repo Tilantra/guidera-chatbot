@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Shield, Zap, Lock, Globe } from "lucide-react";
 import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
 import { FcGoogle } from "react-icons/fc";
+import TilantraBlueLogo from "../components/assets/Tilantra_blueLOGO.png";
 
 function LoginContent() {
     const [email, setEmail] = useState("");
@@ -74,13 +75,15 @@ function LoginContent() {
             <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-50 rounded-full blur-3xl opacity-50"></div>
             <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-50 rounded-full blur-3xl opacity-50"></div>
 
+            {/* Tilantra Logo - Top Left */}
+            <div className="absolute top-6 left-6 z-20">
+                <img src={TilantraBlueLogo} alt="Tilantra" className="h-12 w-auto" />
+            </div>
+
             <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center relative z-10 text-left">
                 {/* Left Side: Info */}
                 <div className="space-y-8">
                     <div className="space-y-4">
-                        <div className="inline-block px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100">
-                            <span className="text-sm font-bold tracking-wider text-blue-600 uppercase">Guidera</span>
-                        </div>
                         <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight text-gray-900 dark:text-white leading-[1.1]">
                             Integrated <br />
                             <span className="text-blue-600 dark:text-blue-500">AI Platform</span>
