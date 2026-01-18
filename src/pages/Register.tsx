@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, Zap, Lock, Globe } from "lucide-react";
+import { AuthBackground } from "../components/AuthBackground";
 import TilantraBlueLogo from "../components/assets/Tilantra_blueLOGO.png";
 
 export default function Register() {
@@ -45,11 +46,8 @@ export default function Register() {
     };
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-[#F8FAFC] dark:bg-slate-950 p-6 lg:p-12 relative overflow-hidden">
-            {/* Background decoration */}
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600"></div>
-            <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-50 rounded-full blur-3xl opacity-50"></div>
-            <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-50 rounded-full blur-3xl opacity-50"></div>
+        <div className="flex min-h-screen items-center justify-center p-6 lg:p-12 relative overflow-hidden">
+            <AuthBackground />
 
             {/* Tilantra Logo - Top Left */}
             <div className="absolute top-6 left-6 z-20">
