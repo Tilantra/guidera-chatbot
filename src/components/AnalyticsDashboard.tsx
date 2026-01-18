@@ -32,12 +32,12 @@ export const AnalyticsDashboard = ({ client }: { client: any }) => {
     return (
       <div className="bg-transparent relative">
         <button
-          className="w-full flex items-center justify-between px-4 py-2 bg-white/80 dark:bg-card rounded-t-lg border-b cursor-pointer transition-all"
+          className="w-full flex items-center justify-between px-3 py-1.5 bg-white/80 dark:bg-card rounded-t-lg border-b cursor-pointer transition-all"
           onClick={() => setOpen((o) => !o)}
         >
-          <span className="font-bold text-2xl">{title}</span>
+          <span className="font-bold text-lg">{title}</span>
           <ChevronDown
-            className={`h-5 w-5 ml-2 transition-transform ${open ? "rotate-180" : ""}`}
+            className={`h-4 w-4 ml-2 transition-transform ${open ? "rotate-180" : ""}`}
           />
         </button>
         {open && <div className="transition-all">{children}</div>}
@@ -171,25 +171,25 @@ export const AnalyticsDashboard = ({ client }: { client: any }) => {
     <div className="w-full max-w-[95vw] mx-auto p-4 bg-gradient-to-br from-background via-background to-secondary/5">
       {/* Header Section */}
       <div className="flex flex-col items-start lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
             Analytics Dashboard
           </h1>
-          <p className="text-muted-foreground flex items-center gap-2">
-            <Activity className="h-4 w-4" />
+          <p className="text-xs text-muted-foreground flex items-center gap-2">
+            <Activity className="h-3 w-3" />
             Real-time insights and performance metrics
           </p>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="text-sm text-muted-foreground">
+        <div className="flex items-center gap-3">
+          <div className="text-[11px] text-muted-foreground bg-muted/30 px-2 py-1 rounded-md">
             Last updated: {lastUpdated}
           </div>
           <button
             onClick={fetchAnalytics}
             disabled={loading}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary font-medium transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold transition-all disabled:opacity-50"
           >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
             Refresh
           </button>
         </div>
@@ -198,72 +198,56 @@ export const AnalyticsDashboard = ({ client }: { client: any }) => {
       {/* Key Metrics Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <Card className="relative overflow-hidden bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/50 dark:to-blue-900/50 border-0">
-          <CardContent className="p-4">
+          <CardContent className="p-3">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Total Requests</p>
-                <p className="text-3xl font-bold text-blue-900 dark:text-blue-100">{totalRequests.toLocaleString()}</p>
-                <div className="flex items-center gap-1 mt-2">
-                  <Activity className="h-3 w-3 text-blue-600" />
-                  <span className="text-xs text-blue-600 font-medium">Total API calls</span>
-                </div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-blue-700/70 dark:text-blue-300/70 leading-none mb-1">Total Requests</p>
+                <p className="text-xl font-bold text-blue-900 dark:text-blue-100">{totalRequests.toLocaleString()}</p>
               </div>
-              <div className="h-10 w-10 rounded-xl bg-blue-500/20 flex items-center justify-center">
-                <Brain className="h-5 w-5 text-blue-600" />
+              <div className="h-8 w-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                <Brain className="h-4 w-4 text-blue-600" />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="relative overflow-hidden bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/50 dark:to-green-900/50 border-0">
-          <CardContent className="p-4">
+          <CardContent className="p-3">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-green-700 dark:text-green-300">Overall Cost Efficiency</p>
-                <p className="text-3xl font-bold text-green-900 dark:text-green-100">{efficiencyScore.toFixed(1)}%</p>
-                <div className="flex items-center gap-1 mt-2">
-                  <ArrowUp className="h-3 w-3 text-green-600" />
-                  <span className="text-xs text-green-600 font-medium">Optimal performance</span>
-                </div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-green-700/70 dark:text-green-300/70 leading-none mb-1">Efficiency</p>
+                <p className="text-xl font-bold text-green-900 dark:text-green-100">{efficiencyScore.toFixed(1)}%</p>
               </div>
-              <div className="h-10 w-10 rounded-xl bg-green-500/20 flex items-center justify-center">
-                <TrendingUp className="h-5 w-5 text-green-600" />
+              <div className="h-8 w-8 rounded-lg bg-green-500/20 flex items-center justify-center">
+                <TrendingUp className="h-4 w-4 text-green-600" />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="relative overflow-hidden bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950/50 dark:to-red-900/50 border-0">
-          <CardContent className="p-4">
+          <CardContent className="p-3">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-red-700 dark:text-red-300">Compliance Failures</p>
-                <p className="text-3xl font-bold text-red-900 dark:text-red-100">{lifetime.compliance_failures || 0}</p>
-                <div className="flex items-center gap-1 mt-2">
-                  <XCircle className="h-3 w-3 text-red-600" />
-                  <span className="text-xs text-red-600 font-medium">Content detected</span>
-                </div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-red-700/70 dark:text-red-300/70 leading-none mb-1">Violations</p>
+                <p className="text-xl font-bold text-red-900 dark:text-red-100">{lifetime.compliance_failures || 0}</p>
               </div>
-              <div className="h-10 w-10 rounded-xl bg-red-500/20 flex items-center justify-center">
-                <AlertTriangle className="h-5 w-5 text-red-600" />
+              <div className="h-8 w-8 rounded-lg bg-red-500/20 flex items-center justify-center">
+                <AlertTriangle className="h-4 w-4 text-red-600" />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="relative overflow-hidden bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/50 dark:to-amber-900/50 border-0">
-          <CardContent className="p-4">
+          <CardContent className="p-3">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-amber-700 dark:text-amber-300">Active Models</p>
-                <p className="text-3xl font-bold text-amber-900 dark:text-amber-100">{barData.length}</p>
-                <div className="flex items-center gap-1 mt-2">
-                  <Target className="h-3 w-3 text-blue-600" />
-                  <span className="text-xs text-blue-600 font-medium">Optimized routing</span>
-                </div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-amber-700/70 dark:text-amber-300/70 leading-none mb-1">Routing Nodes</p>
+                <p className="text-xl font-bold text-amber-900 dark:text-amber-100">{barData.length}</p>
               </div>
-              <div className="h-10 w-10 rounded-xl bg-amber-500/20 flex items-center justify-center">
-                <Zap className="h-5 w-5 text-amber-600" />
+              <div className="h-8 w-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                <Zap className="h-4 w-4 text-amber-600" />
               </div>
             </div>
           </CardContent>

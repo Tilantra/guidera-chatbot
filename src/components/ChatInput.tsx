@@ -32,8 +32,8 @@ interface AxisValues {
   creative: number;     // 0-1, bottom axis
 }
 
-export const ChatInput = ({ 
-  onSendMessage, 
+export const ChatInput = ({
+  onSendMessage,
   isLoading,
   placeholder = "Type your message for plagiarism and compliance check...",
   complianceEnabled = true,
@@ -48,7 +48,7 @@ export const ChatInput = ({
   const [message, setMessage] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const { theme } = useTheme();
-  
+
   // Initialize axis values from cpValue
   const initializeAxisValues = (cp: number | [number, number]): AxisValues => {
     // Start with all axes at 1 (end position)
@@ -59,29 +59,29 @@ export const ChatInput = ({
       creative: 1,
     };
   };
-  
+
   const [axisValues, setAxisValues] = useState<AxisValues>(() => initializeAxisValues(cpValue));
-  
+
   // Convert axis values to cp values using tradeoff formulas
   const calculateCpValues = (values: AxisValues): [number, number] => {
     // Tradeoff mapping:
     // cp[0]: 0 = cost-favored, 1 = performance-favored
     // cp[1]: 0 = deterministic-favored, 1 = creative-favored
-    
+
     const { performance, cost, deterministic, creative } = values;
-    
+
     // X-axis: Performance vs Cost tradeoff
     // X = (performance^2 + 0.1) / (performance^2 + cost^2 + 0.2)
     const pSquared = performance * performance;
     const coSquared = cost * cost;
     const cpX = (pSquared + 0.1) / (pSquared + coSquared + 0.2);
-    
+
     // Y-axis: Creative vs Deterministic tradeoff  
     // Y = (creative^2 + 0.1) / (creative^2 + deterministic^2 + 0.2)
     const crSquared = creative * creative;
     const dSquared = deterministic * deterministic;
     const cpY = (crSquared + 0.1) / (crSquared + dSquared + 0.2);
-    
+
     return [
       Math.max(0, Math.min(1, cpX)),
       Math.max(0, Math.min(1, cpY))
@@ -119,32 +119,32 @@ export const ChatInput = ({
 
   // Axis label color variables
   const AXIS_COLORS = {
-    top: '#bf4e08',      
-    right: '#3d734b',    
-    bottom: '#5667C7',   
-    left: '#900F32',     
+    top: '#bf4e08',
+    right: '#3d734b',
+    bottom: '#5667C7',
+    left: '#900F32',
   };
 
   // Dark mode axis colors
   const DARK_AXIS_COLORS = {
-    top: '#bf4e08',      
-    right: '#3d734b',    
-    bottom: '#5667C7',   
+    top: '#bf4e08',
+    right: '#3d734b',
+    bottom: '#5667C7',
     left: '#fbbf24',     // yellow for Cost-Savings in dark mode
   };
 
   const currentColors = theme === 'dark' ? DARK_AXIS_COLORS : AXIS_COLORS;
 
   return (
-    <Card className="p-4 bg-card">
+    <Card className="p-3 bg-card/70 backdrop-blur-md border border-border/40 shadow-elegant rounded-xl relative z-10">
       <form onSubmit={handleSubmit} className="space-y-3">
-        <div className="relative">
+        <div className="relative group">
           <Textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
-            className="flex-1 min-h-[120px] resize-none border-none bg-transparent px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
+            className="flex-1 min-h-[90px] resize-none border border-border/20 bg-background/30 px-3 py-2 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all duration-200 text-sm placeholder:text-muted-foreground/50"
             disabled={isLoading}
           />
           {client && (
@@ -154,87 +154,81 @@ export const ChatInput = ({
               size="sm"
               onClick={handleMagicButtonClick}
               disabled={!message.trim() || isLoading}
-              className="absolute top-2 right-2 h-10 w-10 p-0 bg-purple-500/20 hover:bg-purple-500/30 text-purple-600 hover:text-purple-700 border border-purple-300/50 rounded-lg transition-colors"
+              className="absolute top-2 right-2 h-8 w-8 p-0 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-lg transition-all shadow-sm active:scale-95"
               title="Generate prompt suggestions"
             >
-              <Wand2 className="h-5 w-5" />
+              <Wand2 className="h-4 w-4" />
             </Button>
           )}
         </div>
-        
+
         {/* Controls Row */}
         <div className="flex items-center justify-between gap-4">
           {/* Left side - ControlGrid and Model Selector */}
           <div className="flex items-end gap-3">
             {/* ControlGrid Button and Popover */}
             <div className="flex flex-col flex-1 max-w-xs">
-            <Popover>
-              <PopoverTrigger asChild>
-            <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    className="min-w-[100px] h-10 px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-semibold shadow hover:bg-primary/90 transition-colors flex items-center gap-2"
-                  >
-                    <Grid className="w-4 h-4 mr-1" />
-                    ControlGrid
-                  </button>
-                  <span className="flex items-center gap-1">
-                    <span
-                      className="px-2 py-0.5 rounded-full bg-purple-100 text-xs text-purple-700 font-semibold font-mono border border-purple-200"
-                      title="X value"
+              <Popover>
+                <PopoverTrigger asChild>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      className="min-w-[100px] h-8 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold shadow-md shadow-primary/20 hover:bg-primary/90 hover:shadow-primary/30 transition-all active:scale-95 flex items-center justify-center gap-1.5"
                     >
-                      {cp[0].toFixed(1)}
+                      <Grid className="w-3.5 h-3.5" />
+                      ControlGrid
+                    </button>
+                    <span className="flex items-center gap-1">
+                      <span
+                        className="px-2.5 py-1 rounded-full bg-primary/10 text-[10px] text-primary font-bold font-mono border border-primary/20 shadow-sm"
+                        title="X value"
+                      >
+                        X:{cp[0].toFixed(1)}
+                      </span>
+                      <span
+                        className="px-2.5 py-1 rounded-full bg-primary/10 text-[10px] text-primary font-bold font-mono border border-primary/20 shadow-sm"
+                        title="Y value"
+                      >
+                        Y:{cp[1].toFixed(1)}
+                      </span>
                     </span>
-                    <span
-                      className="px-2 py-0.5 rounded-full bg-purple-100 text-xs text-purple-700 font-semibold font-mono border border-purple-200"
-                      title="Y value"
-                    >
-                      {cp[1].toFixed(1)}
-                    </span>
-                  </span>
-                </div>
-              </PopoverTrigger>
-              <PopoverContent className="p-4 flex flex-col items-center min-w-[320px]">
+                  </div>
+                </PopoverTrigger>
+                <PopoverContent className="p-3 flex flex-col items-center min-w-[240px] bg-card/95 backdrop-blur-xl border-border/40 shadow-2xl">
                   <div className="flex flex-col items-center">
                     {/* Top label */}
-                    <div className="flex justify-center w-full">
-                      <span className="text-base font-bold" style={{ color: AXIS_COLORS.top, letterSpacing: 1 }}>Deterministic</span>
+                    <div className="flex justify-center w-full mb-1">
+                      <span className="text-[11px] font-black uppercase tracking-[0.2em]" style={{ color: AXIS_COLORS.top }}>Deterministic</span>
                     </div>
-                    <div className="flex flex-row items-center justify-center mt-1 mb-1">
+                    <div className="flex flex-row items-center justify-center">
                       {/* Left label */}
-                      <div className="flex flex-col justify-center items-center h-full mr-2" style={{height: '256px'}}>
-                        <span className="text-base font-bold" style={{ color: theme === 'dark' ? '#fbbf24' : currentColors.left, writingMode: 'vertical-rl', transform: 'rotate(-180deg)', letterSpacing: 1 }}>Cost-Savings</span>
+                      <div className="flex flex-col justify-center items-center h-full mr-2" style={{ height: '176px' }}>
+                        <span className="text-[11px] font-black uppercase tracking-[0.2em]" style={{ color: theme === 'dark' ? '#fbbf24' : currentColors.left, writingMode: 'vertical-rl', transform: 'rotate(-180deg)' }}>Cost-Savings</span>
                       </div>
-                      <div className="relative" style={{ width: '256px', height: '256px' }}>
-                        <div className={`absolute inset-0 rounded-lg border ${
-                          theme === 'dark' 
-                            ? 'bg-gradient-to-br from-gray-800 via-gray-850 to-gray-900 border-gray-600 shadow-inner' 
-                            : 'bg-gradient-to-br from-white via-gray-50 to-gray-100 border-gray-200 shadow-inner'
-                        }`} style={{
-                          backgroundImage: theme === 'dark' 
-                            ? 'radial-gradient(circle at 30% 30%, rgba(55, 65, 81, 0.3) 0%, transparent 50%), radial-gradient(circle at 70% 70%, rgba(75, 85, 99, 0.2) 0%, transparent 50%)'
-                            : 'radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.8) 0%, transparent 50%), radial-gradient(circle at 70% 70%, rgba(229, 231, 235, 0.6) 0%, transparent 50%)'
-                        }} />
-                        
-                        {/* Axes lines only */}
-                        <svg className="absolute inset-0 w-full h-full" width="256" height="256" viewBox="0 0 256 256">
+                      <div className="relative" style={{ width: '176px', height: '176px' }}>
+                        <div className={`absolute inset-0 rounded-lg border ${theme === 'dark'
+                          ? 'bg-gradient-to-br from-gray-800/50 via-gray-850/50 to-gray-900/50 border-gray-600/50 shadow-inner'
+                          : 'bg-gradient-to-br from-white via-gray-50 to-gray-100 border-gray-200/50 shadow-inner'
+                          }`} />
+
+                        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
                           {/* Horizontal axis */}
                           <line
-                            x1="0%" y1="50%" x2="100%" y2="50%"
-                            stroke={theme === 'dark' ? '#4b5563' : '#9ca3af'} 
-                            strokeWidth="2" 
+                            x1="0" y1="50" x2="100" y2="50"
+                            stroke={theme === 'dark' ? '#4b5563' : '#e5e7eb'}
+                            strokeWidth="1"
                           />
                           {/* Vertical axis */}
                           <line
-                            x1="50%" y1="0%" x2="50%" y2="100%"
-                            stroke={theme === 'dark' ? '#4b5563' : '#9ca3af'} 
-                            strokeWidth="2" 
+                            x1="50" y1="0" x2="50" y2="100"
+                            stroke={theme === 'dark' ? '#4b5563' : '#e5e7eb'}
+                            strokeWidth="1"
                           />
                         </svg>
-                        
+
                         {/* Colored area formed by the four dots */}
                         <FourDotArea axisValues={axisValues} theme={theme} />
-                        
+
                         {/* Four axis dots */}
                         <AxisDot
                           position="top"
@@ -278,21 +272,21 @@ export const ChatInput = ({
                         />
                       </div>
                       {/* Right label */}
-                      <div className="flex flex-col justify-center items-center h-full ml-2" style={{height: '256px'}}>
-                        <span className="text-base font-bold" style={{ color: currentColors.right, writingMode: 'vertical-rl', letterSpacing: 1 }}>Performance</span>
+                      <div className="flex flex-col justify-center items-center h-full ml-2" style={{ height: '176px' }}>
+                        <span className="text-[11px] font-black uppercase tracking-[0.2em]" style={{ color: currentColors.right, writingMode: 'vertical-rl' }}>Performance</span>
                       </div>
                     </div>
                     {/* Bottom label */}
-                    <div className="flex justify-center w-full">
-                      <span className="text-base font-bold" style={{ color: currentColors.bottom, letterSpacing: 1 }}>Creative</span>
-              </div>
+                    <div className="flex justify-center w-full mt-1">
+                      <span className="text-[11px] font-black uppercase tracking-[0.2em]" style={{ color: currentColors.bottom }}>Creative</span>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
-              </PopoverContent>
-            </Popover>
-            </div>
-            
+
             {/* Model Selector - positioned after ControlGrid */}
-            <ModelSelector 
+            <ModelSelector
               client={client}
               onModelChange={onModelChange}
             />
@@ -313,10 +307,10 @@ export const ChatInput = ({
               checked={redactionEnabled}
               onCheckedChange={onRedactionToggle}
             />
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={!message.trim() || isLoading}
-              className="min-w-[100px]"
+              className="min-w-[100px] h-9 rounded-lg bg-primary shadow-md shadow-primary/20 hover:shadow-primary/30 transition-all active:scale-95 text-sm font-bold"
             >
               {isLoading ? (
                 <>
@@ -333,7 +327,7 @@ export const ChatInput = ({
           </div>
         </div>
       </form>
-      
+
       <PromptSuggestionsDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
@@ -341,15 +335,15 @@ export const ChatInput = ({
         client={client}
         onPromptSelect={handlePromptSelect}
       />
-    </Card>
+    </Card >
   );
 };
 
 // AxisDot component - dots that move along specific axes
-function AxisDot({ position, value, color, onChange }: { 
-  position: 'top' | 'right' | 'bottom' | 'left'; 
-  value: number; 
-  color: string; 
+function AxisDot({ position, value, color, onChange }: {
+  position: 'top' | 'right' | 'bottom' | 'left';
+  value: number;
+  color: string;
   onChange: (value: number) => void;
 }) {
   const [dragging, setDragging] = useState(false);
@@ -363,7 +357,7 @@ function AxisDot({ position, value, color, onChange }: {
   const handlePointerMove = (e: React.PointerEvent) => {
     if (!dragging) return;
     const rect = (e.currentTarget.parentElement as HTMLElement).getBoundingClientRect();
-    
+
     let newValue: number;
     if (position === 'top' || position === 'bottom') {
       // Vertical axis - use Y coordinate
@@ -374,7 +368,7 @@ function AxisDot({ position, value, color, onChange }: {
       newValue = (e.clientX - rect.left) / rect.width;
       if (position === 'left') newValue = 1 - newValue; // Invert for left axis
     }
-    
+
     onChange(clamp(newValue));
   };
 
@@ -410,9 +404,9 @@ function AxisDot({ position, value, color, onChange }: {
       aria-valuemin={0}
       aria-valuemax={1}
     >
-      <div 
-        className="w-3 h-3 rounded-full border-2 border-white shadow cursor-pointer transition-transform active:scale-110" 
-        style={{ background: color }} 
+      <div
+        className="w-3 h-3 rounded-full border-2 border-white shadow cursor-pointer transition-transform active:scale-110"
+        style={{ background: color }}
       />
     </div>
   );
@@ -432,10 +426,10 @@ function FourDotArea({ axisValues, theme }: { axisValues: AxisValues; theme: str
 
   // Create a sophisticated gradient based on corner influences
   const createGradientId = 'fourDotGradient';
-  
+
   const getCornerInfluences = () => {
     const { performance, cost, deterministic, creative } = axisValues;
-    
+
     // Define corner colors with intensity based on values - using brighter, more vibrant colors
     const corners = [
       { // Top-Right: Performance + Deterministic
@@ -463,28 +457,28 @@ function FourDotArea({ axisValues, theme }: { axisValues: AxisValues; theme: str
         name: 'cost-creative'
       }
     ];
-    
+
     return corners.filter(corner => corner.influence > 0);
   };
 
   const influences = getCornerInfluences();
   const totalInfluence = influences.reduce((sum, corner) => sum + corner.influence, 0);
-  
+
   // Create base color based on weighted influences
   const getAreaColor = () => {
     if (totalInfluence === 0) {
       return theme === 'dark' ? 'rgba(75, 85, 99, 0.4)' : 'rgba(209, 213, 219, 0.4)';
     }
-    
+
     // Single dominant corner
     if (influences.length === 1) {
       const corner = influences[0];
       const alpha = Math.min(0.8, 0.4 + corner.influence * 0.4); // Increased base alpha for more vibrancy
-      return corner.color.replace(')', `, ${alpha})`).replace('#', 'rgba(').replace(/(.{2})(.{2})(.{2})/, (_, r, g, b) => 
+      return corner.color.replace(')', `, ${alpha})`).replace('#', 'rgba(').replace(/(.{2})(.{2})(.{2})/, (_, r, g, b) =>
         `rgba(${parseInt(r, 16)}, ${parseInt(g, 16)}, ${parseInt(b, 16)}, ${alpha})`
       );
     }
-    
+
     // Blend multiple corners
     let r = 0, g = 0, b = 0;
     influences.forEach(corner => {
@@ -494,13 +488,13 @@ function FourDotArea({ axisValues, theme }: { axisValues: AxisValues; theme: str
       g += parseInt(rgb.substr(2, 2), 16) * weight;
       b += parseInt(rgb.substr(4, 2), 16) * weight;
     });
-    
+
     const alpha = Math.min(0.8, 0.4 + totalInfluence * 0.4); // Increased base alpha
     return `rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}, ${alpha})`;
   };
 
   return (
-    <svg className="absolute inset-0 w-full h-full" width="256" height="256" viewBox="0 0 100 100">
+    <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
       <defs>
         <radialGradient id={createGradientId} cx="50%" cy="50%" r="60%">
           <stop offset="0%" stopColor={getAreaColor()} />
@@ -509,10 +503,10 @@ function FourDotArea({ axisValues, theme }: { axisValues: AxisValues; theme: str
         </radialGradient>
         {/* Add a glow effect filter */}
         <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-          <feMerge> 
-            <feMergeNode in="coloredBlur"/>
-            <feMergeNode in="SourceGraphic"/>
+          <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+          <feMerge>
+            <feMergeNode in="coloredBlur" />
+            <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
       </defs>

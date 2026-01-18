@@ -375,65 +375,78 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background text-left">
-      {/* Header */}
-      <Card className="p-4 m-4 mb-2 shadow-card border-border/50 bg-card">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary">
-              <Bot className="h-6 w-6 text-primary-foreground" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-foreground">Guidera ChatBot</h1>
-              <p className="text-sm text-muted-foreground">
-                Enterprise AI Orchestration. Simplified
-              </p>
-            </div>
-          </div>
+    <div className="flex flex-col h-screen bg-background text-left relative overflow-hidden">
+      {/* Subtle Background Elements (Matching Login) */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-5%] right-[-5%] w-[40%] h-[40%] bg-blue-100/30 dark:bg-blue-900/10 rounded-full blur-[100px]"></div>
+        <div className="absolute bottom-[-5%] left-[-5%] w-[40%] h-[40%] bg-primary/10 dark:bg-primary/5 rounded-full blur-[100px]"></div>
+      </div>
 
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handleClearChat}>
-              <RotateCcw className="h-4 w-4" />
-              Clear
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <div className="ml-2 cursor-pointer">
-                  <Avatar
-                    style={userProfile.avatarStyle}
-                    seed={userProfile.avatarSeed}
-                    size={36}
-                    className="border-2 border-border hover:border-primary transition-colors"
-                  />
-                </div>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setActiveTab('settings')}>
-                  <Settings className="h-4 w-4 mr-2" />
-                  Settings
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={onLogout}>
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Logout
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+      {/* Header */}
+      <div className="px-4 pt-3 pb-1 relative z-10">
+        <Card className="p-3 border-border/40 bg-card/80 backdrop-blur-md shadow-elegant rounded-xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-lg bg-primary shadow-md shadow-primary/20">
+                <Bot className="h-5 w-5 text-primary-foreground" />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold tracking-tight text-foreground">Guidera ChatBot</h1>
+                <p className="text-[11px] text-muted-foreground/70 font-medium leading-none mt-0.5">
+                  Enterprise AI Orchestration Simplified
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleClearChat}
+                className="h-8 px-2.5 border-border/50 hover:bg-secondary/80 transition-all rounded-lg text-xs"
+              >
+                <RotateCcw className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
+                Clear
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <div className="ml-1 cursor-pointer">
+                    <Avatar
+                      style={userProfile.avatarStyle}
+                      seed={userProfile.avatarSeed}
+                      size={32}
+                      className="border border-border hover:border-primary transition-colors"
+                    />
+                  </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setActiveTab('settings')}>
+                    <Settings className="h-4 w-4 mr-2" />
+                    Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={onLogout}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+      </div>
 
       {/* Main Content */}
-      <div className="flex-1 px-4">
+      <div className="flex-1 relative z-10 flex flex-col min-h-0 container mx-auto px-4 overflow-hidden">
         {/* Settings Page - Rendered Outside Tabs */}
         {activeTab === 'settings' && (
-          <div className="h-full flex flex-col">
-            <div className="flex items-center gap-2 mb-4 p-2 border-b">
+          <div className="flex-1 flex flex-col min-h-0 py-4">
+            <div className="flex items-center gap-2 mb-4 p-2 border-b bg-background/50 backdrop-blur-sm rounded-t-xl">
               <Button variant="outline" size="sm" onClick={() => setActiveTab('chat')}>
                 ← Back
               </Button>
               <h1 className="text-lg font-semibold">Settings</h1>
             </div>
-            <div className="flex-1 min-h-0">
+            <div className="flex-1 min-h-0 overflow-y-auto">
               <SettingsPage />
             </div>
           </div>
@@ -441,69 +454,73 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
 
         {/* Tabs Content - Only when NOT in settings */}
         {activeTab !== 'settings' && (
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-            <div className="pb-4 pt-2 sticky top-0 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-              <TabsList className="grid w-full grid-cols-3 h-auto p-1.5 bg-muted/50 rounded-xl border border-border/50">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+            <div className="py-2 sticky top-0 z-20 bg-background/0">
+              <TabsList className="grid w-full grid-cols-3 h-auto p-1 bg-muted/30 backdrop-blur-md rounded-xl border border-border/40 shadow-sm">
                 <TabsTrigger
                   value="chat"
-                  className="flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm hover:text-foreground/80"
+                  className="flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-medium transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm hover:text-foreground/80"
                 >
-                  <MessageSquare className="h-4 w-4" />
+                  <MessageSquare className="h-3.5 w-3.5" />
                   Chat
                 </TabsTrigger>
                 <TabsTrigger
                   value="policies"
-                  className="flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm hover:text-foreground/80"
+                  className="flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-medium transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm hover:text-foreground/80"
                 >
-                  <ShieldCheck className="h-4 w-4" />
+                  <ShieldCheck className="h-3.5 w-3.5" />
                   Policies
                 </TabsTrigger>
                 <TabsTrigger
                   value="dashboard"
-                  className="flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm hover:text-foreground/80"
+                  className="flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-semibold transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-elegant hover:text-foreground/80"
                 >
-                  <BarChart3 className="h-4 w-4" />
+                  <BarChart3 className="h-3.5 w-3.5" />
                   Dashboard
                 </TabsTrigger>
               </TabsList>
             </div>
 
-            <TabsContent value="chat" className="flex-1 flex flex-col">
+            <TabsContent value="chat" className="flex-1 flex flex-col min-h-0 data-[state=inactive]:hidden pb-4">
               {/* Chat Messages */}
-              <div className="flex-1 overflow-y-auto py-4 space-y-4">
+              <div className="flex-1 overflow-y-auto py-4 space-y-4 px-1 min-h-0">
                 {messages.length === 0 ? (
-                  <Card className="p-8 text-center shadow-card bg-card">
-                    <img src={GuideraLogo} alt="Guidera Logo" className="h-25 w-25 mx-auto mb-4 object-contain" />
-                    <h3 className="text-lg font-semibold mb-2 text-foreground">Welcome to Guidera ChatBot</h3>
-                    <p className="text-muted-foreground mb-6">
-                      Send a message to analyze it for plagiarism and compliance violations.
-                      Our AI will check your content against multiple compliance standards and provide detailed feedback.
-                    </p>
+                  <div className="flex items-center justify-center min-h-[300px]">
+                    <Card className="p-6 text-center border-dashed border-2 border-border/40 bg-card/30 backdrop-blur-sm shadow-none max-w-xl w-full">
+                      <div className="relative mb-4">
+                        <div className="absolute inset-0 bg-primary/5 rounded-full blur-xl"></div>
+                        <img src={GuideraLogo} alt="Guidera Logo" className="h-16 w-auto mx-auto relative object-contain" />
+                      </div>
+                      <h3 className="text-xl font-bold mb-1 tracking-tight text-foreground">Welcome to Guidera</h3>
+                      <p className="text-[13px] text-muted-foreground max-w-md mx-auto mb-6 font-medium">
+                        The intelligent control layer for your AI workflows. Start a conversation to analyze compliance and optimize performance.
+                      </p>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                      <div className="p-3 rounded border border-border bg-secondary/50">
-                        <p className="font-medium text-foreground flex items-center gap-2 justify-center text-center mb-2">
-                          <Shield className="h-5 w-5 text-primary" />
-                          Compliance Check
-                        </p>
-                        <p className="text-muted-foreground text-center">Privacy, content guidelines, and policy validation</p>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
+                        <div className="p-3 rounded-xl border border-border/40 bg-background/40 hover:bg-background/70 transition-colors group">
+                          <div className="h-8 w-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
+                            <Shield className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                          </div>
+                          <p className="font-bold text-xs text-foreground mb-1">Compliance</p>
+                          <p className="text-[10px] text-muted-foreground leading-relaxed text-center">Privacy & policy validation</p>
+                        </div>
+                        <div className="p-3 rounded-xl border border-border/40 bg-background/40 hover:bg-background/70 transition-colors group">
+                          <div className="h-8 w-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
+                            <Brain className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                          </div>
+                          <p className="font-bold text-xs text-foreground mb-1">Plagiarism</p>
+                          <p className="text-[10px] text-muted-foreground leading-relaxed text-center">Intellectual property protection</p>
+                        </div>
+                        <div className="p-3 rounded-xl border border-border/40 bg-background/40 hover:bg-background/70 transition-colors group">
+                          <div className="h-8 w-8 rounded-lg bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
+                            <Settings className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                          </div>
+                          <p className="font-bold text-xs text-foreground mb-1">Optimization</p>
+                          <p className="text-[10px] text-muted-foreground leading-relaxed text-center">Cost-efficient AI processing</p>
+                        </div>
                       </div>
-                      <div className="p-3 rounded border border-border bg-secondary/50">
-                        <p className="font-medium text-foreground flex items-center gap-2 justify-center text-center mb-2">
-                          <Brain className="h-5 w-5 text-primary" />
-                          Plagiarism Detection
-                        </p>
-                        <p className="text-muted-foreground text-center">Source identification and similarity analysis</p>
-                      </div>
-                      <div className="p-3 rounded border border-border bg-secondary/50">
-                        <p className="font-medium text-foreground flex items-center gap-2 justify-center text-center mb-2">
-                          <Settings className="h-5 w-5 text-primary" />
-                          AI Model Info
-                        </p>
-                        <p className="text-muted-foreground text-center">Transparency in AI processing and analysis</p>
-                      </div>
-                    </div>
-                  </Card>
+                    </Card>
+                  </div>
                 ) : (
                   messages.map((message) => (
                     <ChatMessage
@@ -517,7 +534,7 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
               </div>
 
               {/* Chat Input */}
-              <div className="py-4 sticky bottom-0 z-20 bg-background/95 shadow-sm">
+              <div className="pt-2 pb-0 z-20 bg-transparent">
                 <ChatInput
                   onSendMessage={handleSendMessage}
                   isLoading={isLoading}
@@ -535,10 +552,10 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
                 />
               </div>
             </TabsContent>
-            <TabsContent value="policies" className={`flex flex-col ${activeTab === "policies" ? "h-full" : ""}`}>
+            <TabsContent value="policies" className="flex-1 flex flex-col min-h-0 overflow-y-auto data-[state=inactive]:hidden px-1 pb-4">
               <CompliancePolicyManager client={client} isActive={activeTab === "policies"} />
             </TabsContent>
-            <TabsContent value="dashboard" className="flex-1 flex flex-col">
+            <TabsContent value="dashboard" className="flex-1 flex flex-col min-h-0 overflow-y-auto data-[state=inactive]:hidden px-1 pb-4">
               <AnalyticsDashboard client={client} />
             </TabsContent>
           </Tabs>

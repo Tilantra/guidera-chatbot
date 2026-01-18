@@ -119,14 +119,14 @@ export const CompliancePolicyManager = ({ complianceEnabled = true, client, isAc
     <div className="w-full max-w-[95vw] mx-auto p-6 space-y-6 bg-gradient-to-br from-background via-background to-secondary/5">
       {/* Header Section */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent flex items-center gap-3">
-            <Shield className="h-8 w-8 text-primary" />
+        <div className="space-y-1">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent flex items-center gap-2">
+            <Shield className="h-6 w-6 text-primary" />
             Policy Management
           </h1>
-          <p className="text-muted-foreground flex items-center gap-2">
-            <Lock className="h-4 w-4" />
-            Configure and manage compliance policies for enterprise security
+          <p className="text-xs text-muted-foreground flex items-center gap-2">
+            <Lock className="h-3 w-3" />
+            Configure and manage compliance policies
           </p>
         </div>
         <div className="flex items-center gap-4">
@@ -202,42 +202,42 @@ export const CompliancePolicyManager = ({ complianceEnabled = true, client, isAc
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <Card className="relative overflow-hidden bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/50 dark:to-blue-900/50 border-0">
-          <CardContent className="p-4">
+          <CardContent className="p-3">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium text-blue-700 dark:text-blue-300">Total Policies</p>
-                <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{stats.total}</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-blue-700/70 dark:text-blue-300/70 leading-none mb-1">Total</p>
+                <p className="text-xl font-bold text-blue-900 dark:text-blue-100">{stats.total}</p>
               </div>
-              <div className="h-10 w-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                <FileText className="h-5 w-5 text-blue-600" />
+              <div className="h-8 w-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                <FileText className="h-4 w-4 text-blue-600" />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="relative overflow-hidden bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/50 dark:to-purple-900/50 border-0">
-          <CardContent className="p-4">
+          <CardContent className="p-3">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium text-purple-700 dark:text-purple-300">Input Policies</p>
-                <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">{stats.input}</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-purple-700/70 dark:text-purple-300/70 leading-none mb-1">Input</p>
+                <p className="text-xl font-bold text-purple-900 dark:text-purple-100">{stats.input}</p>
               </div>
-              <div className="h-10 w-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                <Eye className="h-5 w-5 text-purple-600" />
+              <div className="h-8 w-8 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                <Eye className="h-4 w-4 text-purple-600" />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="relative overflow-hidden bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/50 dark:to-green-900/50 border-0">
-          <CardContent className="p-4">
+          <CardContent className="p-3">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium text-green-700 dark:text-green-300">Output Policies</p>
-                <p className="text-2xl font-bold text-green-900 dark:text-green-100">{stats.output}</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-green-700/70 dark:text-green-300/70 leading-none mb-1">Output</p>
+                <p className="text-xl font-bold text-green-900 dark:text-green-100">{stats.output}</p>
               </div>
-              <div className="h-10 w-10 rounded-lg bg-green-500/20 flex items-center justify-center">
-                <EyeOff className="h-5 w-5 text-green-600" />
+              <div className="h-8 w-8 rounded-lg bg-green-500/20 flex items-center justify-center">
+                <EyeOff className="h-4 w-4 text-green-600" />
               </div>
             </div>
           </CardContent>
@@ -282,8 +282,8 @@ export const CompliancePolicyManager = ({ complianceEnabled = true, client, isAc
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className={`p-2 rounded-lg ${policy.type === 'input'
-                        ? 'bg-purple-100 dark:bg-purple-950/30'
-                        : 'bg-green-100 dark:bg-green-950/30'
+                      ? 'bg-purple-100 dark:bg-purple-950/30'
+                      : 'bg-green-100 dark:bg-green-950/30'
                       }`}>
                       {policy.type === 'input' ? (
                         <Eye className="h-4 w-4 text-purple-600" />
@@ -306,8 +306,8 @@ export const CompliancePolicyManager = ({ complianceEnabled = true, client, isAc
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  <p className="text-base text-foreground leading-relaxed font-medium">
+                <div className="space-y-2">
+                  <p className="text-sm text-foreground leading-relaxed font-medium">
                     {policy.description}
                   </p>
                 </div>
