@@ -38,8 +38,9 @@ function LoginContent() {
                     username: userInfo.email.split('@')[0],
                     full_name: userInfo.name,
                     company: "Default",
-                    teams: ["**NO_TEAM**"],
-                    models: ["gpt4", "llama3", "gemini2.5-flash"]
+                    teams: [""],
+                    models: ["gpt4", "llama3", "gemini2.5-flash"],
+                    tier: "basic"
                 });
 
                 navigate("/");

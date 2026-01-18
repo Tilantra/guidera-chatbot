@@ -79,6 +79,7 @@ export class BrowserGuideraClient {
       full_name?: string;
       username?: string;
       email?: string;
+      tier?: string;
     }
   ): Promise<string> {
     const authUrl = `${this.apiBaseUrl}/users/auth/google`;
@@ -114,6 +115,7 @@ export class BrowserGuideraClient {
     company: string;
     models: string[];
     teams: string[];
+    tier?: string;
   }): Promise<any> {
     const registerUrl = `${this.apiBaseUrl}/users/register`;
     const response = await axios.post(registerUrl, data);
