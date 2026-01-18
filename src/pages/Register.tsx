@@ -34,7 +34,7 @@ export default function Register() {
             await client.register({
                 ...formData,
                 models: ["gpt4", "llama3", "gemini2.5-flash"],
-                teams: [""],
+                teams: [],
                 tier: "basic",
             });
             await client.login(formData.email, formData.password);

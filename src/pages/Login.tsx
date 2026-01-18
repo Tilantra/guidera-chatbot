@@ -38,7 +38,7 @@ function LoginContent() {
                     username: userInfo.email.split('@')[0],
                     full_name: userInfo.name,
                     company: "Default",
-                    teams: [""],
+                    teams: [],
                     models: ["gpt4", "llama3", "gemini2.5-flash"],
                     tier: "basic"
                 });
