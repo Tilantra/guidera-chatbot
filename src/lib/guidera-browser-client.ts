@@ -1,6 +1,18 @@
 import axios from 'axios';
+import type {
+  CreateCapsuleRequest,
+  CreateCapsuleResponse,
+  CreateVersionRequest,
+  CreateVersionResponse,
+  SearchCapsuleRequest,
+  SearchResponse,
+  CapsuleMetadata,
+  CapsuleVersion,
+  VersionListResponse,
+} from './capsule-types';
 
-const BASE_URL = 'https://backend.tilantra.com';
+// Local development backend
+const BASE_URL = 'http://localhost:8000';
 
 export class BrowserGuideraClient {
   private apiBaseUrl: string;
@@ -307,11 +319,36 @@ export class BrowserGuideraClient {
     }
   }
 
-  async getSingleUser(): Promise<{ username: string; email: string; full_name: string; company: string }> {
+  async getSingleUser(email?: string, username?: string): Promise<{ username: string; email: string; full_name: string; company: string; teams?: string[] }> {
     if (!this.tokenValid()) {
       throw new Error('Not authenticated');
     }
-    const url = `${this.apiBaseUrl}/users/getsingleUser`;
+    
+    // If no email/username provided, try to extract from JWT token
+    if (!email && !username && this.authToken) {
+      try {
+        // Decode JWT token (format: header.payload.signature)
+        const tokenParts = this.authToken.split('.');
+        if (tokenParts.length === 3) {
+          const payload = JSON.parse(atob(tokenParts[1]));
+          email = payload.email;
+          username = payload.sub; // 'sub' typically contains username
+        }
+      } catch (err) {
+        // Token decode failed
+      }
+    }
+    
+    // Build query parameters
+    const params = new URLSearchParams();
+    if (email) params.append('email', email);
+    if (username) params.append('username', username);
+    
+    if (!params.toString()) {
+      throw new Error('Either email or username must be provided or extractable from token');
+    }
+    
+    const url = `${this.apiBaseUrl}/users/getsingleUser?${params.toString()}`;
     const headers = {
       Authorization: `Bearer ${this.authToken}`,
       'Content-Type': 'application/json',
@@ -394,6 +431,272 @@ export class BrowserGuideraClient {
       'Content-Type': 'application/json',
     };
     const response = await axios.delete(url, { headers });
+    if (response.status === 200) {
+      return response.data;
+    } else if (response.status === 401) {
+      this.clearJwt();
+      throw new Error('Session expired or invalid. Please log in again.');
+    } else {
+      throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
+    }
+  }
+
+  // ============================================
+  // CAPSULE METHODS
+  // ============================================
+
+  /**
+   * Create a new capsule with initial content
+   * @param request - Capsule creation request containing messages, tag, team
+   * @returns Created capsule metadata
+   */
+  async createCapsule(request: CreateCapsuleRequest): Promise<CreateCapsuleResponse> {
+    if (!this.tokenValid()) {
+      throw new Error('Not authenticated');
+    }
+    const url = `${this.apiBaseUrl}/capsules`;
+    const headers = {
+      Authorization: `Bearer ${this.authToken}`,
+      'Content-Type': 'application/json',
+    };
+    const response = await axios.post(url, request, { headers });
+    if (response.status === 200 || response.status === 201) {
+      return response.data;
+    } else if (response.status === 401) {
+      this.clearJwt();
+      throw new Error('Session expired or invalid. Please log in again.');
+    } else {
+      throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
+    }
+  }
+
+  /**
+   * Create a new version for an existing capsule
+   * @param capsuleId - ID of the capsule to add version to
+   * @param request - Version creation request containing new messages
+   * @returns Created version metadata
+   */
+  async createCapsuleVersion(
+    capsuleId: string,
+    request: CreateVersionRequest
+  ): Promise<CreateVersionResponse> {
+    if (!this.tokenValid()) {
+      throw new Error('Not authenticated');
+    }
+    const url = `${this.apiBaseUrl}/capsules/${capsuleId}/versions`;
+    const headers = {
+      Authorization: `Bearer ${this.authToken}`,
+      'Content-Type': 'application/json',
+    };
+    const response = await axios.post(url, request, { headers });
+    if (response.status === 200 || response.status === 201) {
+      return response.data;
+    } else if (response.status === 401) {
+      this.clearJwt();
+      throw new Error('Session expired or invalid. Please log in again.');
+    } else {
+      throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
+    }
+  }
+
+  /**
+   * Get capsule metadata by ID
+   * @param capsuleId - ID of the capsule
+   * @returns Capsule metadata
+   */
+  async getCapsuleMetadata(capsuleId: string): Promise<CapsuleMetadata> {
+    if (!this.tokenValid()) {
+      throw new Error('Not authenticated');
+    }
+    const url = `${this.apiBaseUrl}/capsules/${capsuleId}`;
+    const headers = {
+      Authorization: `Bearer ${this.authToken}`,
+      'Content-Type': 'application/json',
+    };
+    const response = await axios.get(url, { headers });
+    if (response.status === 200) {
+      return response.data;
+    } else if (response.status === 401) {
+      this.clearJwt();
+      throw new Error('Session expired or invalid. Please log in again.');
+    } else {
+      throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
+    }
+  }
+
+  /**
+   * Get full version content (includes all messages)
+   * @param capsuleId - ID of the capsule
+   * @param versionId - ID of the version
+   * @returns Full version with content
+   */
+  async getCapsuleVersion(capsuleId: string, versionId: string): Promise<CapsuleVersion> {
+    if (!this.tokenValid()) {
+      throw new Error('Not authenticated');
+    }
+    const url = `${this.apiBaseUrl}/capsules/${capsuleId}/versions/${versionId}`;
+    const headers = {
+      Authorization: `Bearer ${this.authToken}`,
+      'Content-Type': 'application/json',
+    };
+    const response = await axios.get(url, { headers });
+    if (response.status === 200) {
+      return response.data;
+    } else if (response.status === 401) {
+      this.clearJwt();
+      throw new Error('Session expired or invalid. Please log in again.');
+    } else {
+      throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
+    }
+  }
+
+  /**
+   * List all versions of a capsule (metadata only, no full content)
+   * @param capsuleId - ID of the capsule
+   * @returns List of version metadata
+   */
+  async getCapsuleVersions(capsuleId: string): Promise<VersionListResponse> {
+    if (!this.tokenValid()) {
+      throw new Error('Not authenticated');
+    }
+    const url = `${this.apiBaseUrl}/capsules/${capsuleId}/versions`;
+    const headers = {
+      Authorization: `Bearer ${this.authToken}`,
+      'Content-Type': 'application/json',
+    };
+    const response = await axios.get(url, { headers });
+    if (response.status === 200) {
+      return response.data;
+    } else if (response.status === 401) {
+      this.clearJwt();
+      throw new Error('Session expired or invalid. Please log in again.');
+    } else {
+      throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
+    }
+  }
+
+  /**
+   * Search capsules by tag, summary, or other criteria
+   * @param request - Search parameters
+   * @returns Search results with capsule metadata
+   */
+  async searchCapsules(request: SearchCapsuleRequest = {}): Promise<SearchResponse> {
+    if (!this.tokenValid()) {
+      throw new Error('Not authenticated');
+    }
+    const url = `${this.apiBaseUrl}/capsules/search`;
+    const headers = {
+      Authorization: `Bearer ${this.authToken}`,
+      'Content-Type': 'application/json',
+    };
+    const response = await axios.post(url, request, { headers });
+    if (response.status === 200) {
+      return response.data;
+    } else if (response.status === 401) {
+      this.clearJwt();
+      throw new Error('Session expired or invalid. Please log in again.');
+    } else {
+      throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
+    }
+  }
+
+  /**
+   * Get all capsules created by the current user
+   * @param limit - Maximum number of results
+   * @param offset - Pagination offset
+   * @returns User's capsules
+   */
+  async getUserCapsules(limit: number = 20, offset: number = 0): Promise<SearchResponse> {
+    if (!this.tokenValid()) {
+      throw new Error('Not authenticated');
+    }
+    const url = `${this.apiBaseUrl}/capsules/user?limit=${limit}&offset=${offset}`;
+    const headers = {
+      Authorization: `Bearer ${this.authToken}`,
+      'Content-Type': 'application/json',
+    };
+    const response = await axios.get(url, { headers });
+    if (response.status === 200) {
+      return response.data;
+    } else if (response.status === 401) {
+      this.clearJwt();
+      throw new Error('Session expired or invalid. Please log in again.');
+    } else {
+      throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
+    }
+  }
+
+  /**
+   * Delete a capsule and all its versions
+   * @param capsuleId - Capsule ID to delete
+   */
+  async deleteCapsule(capsuleId: string): Promise<void> {
+    if (!this.tokenValid()) {
+      throw new Error('Not authenticated');
+    }
+    const url = `${this.apiBaseUrl}/capsules/${capsuleId}`;
+    const headers = {
+      Authorization: `Bearer ${this.authToken}`,
+      'Content-Type': 'application/json',
+    };
+    const response = await axios.delete(url, { headers });
+    if (response.status === 204 || response.status === 200) {
+      return;
+    } else if (response.status === 401) {
+      this.clearJwt();
+      throw new Error('Session expired or invalid. Please log in again.');
+    } else {
+      throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
+    }
+  }
+
+  /**
+   * Get capsules from all teams the user belongs to
+   * @param limit - Maximum number of results
+   * @param offset - Pagination offset
+   * @returns Team capsules
+   */
+  async getUserTeamCapsules(limit: number = 20, offset: number = 0): Promise<SearchResponse> {
+    if (!this.tokenValid()) {
+      throw new Error('Not authenticated');
+    }
+    const url = `${this.apiBaseUrl}/capsules/user/all-teams-collection?limit=${limit}&offset=${offset}`;
+    const headers = {
+      Authorization: `Bearer ${this.authToken}`,
+      'Content-Type': 'application/json',
+    };
+    const response = await axios.get(url, { headers });
+    if (response.status === 200) {
+      return response.data;
+    } else if (response.status === 401) {
+      this.clearJwt();
+      throw new Error('Session expired or invalid. Please log in again.');
+    } else {
+      throw new Error(`Error: HTTP ${response.status}: ${response.statusText}`);
+    }
+  }
+
+  /**
+   * Get capsules for a specific team
+   * @param team - Team name
+   * @param limit - Maximum number of results
+   * @param offset - Pagination offset
+   * @returns Team capsules
+   */
+  async getTeamCapsules(
+    team: string,
+    limit: number = 20,
+    offset: number = 0
+  ): Promise<SearchResponse> {
+    if (!this.tokenValid()) {
+      throw new Error('Not authenticated');
+    }
+    const url = `${this.apiBaseUrl}/capsules/team/${encodeURIComponent(team)}?limit=${limit}&offset=${offset}`;
+    const headers = {
+      Authorization: `Bearer ${this.authToken}`,
+      'Content-Type': 'application/json',
+    };
+    const response = await axios.get(url, { headers });
     if (response.status === 200) {
       return response.data;
     } else if (response.status === 401) {

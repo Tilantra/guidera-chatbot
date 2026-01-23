@@ -42,7 +42,6 @@ export const CompliancePolicyManager = ({ complianceEnabled = true, client, isAc
     setIsLoading(true);
     try {
       const data = await client.getPolicies();
-      console.log('Fetched policies:', data); // DEBUG
       // Robust description extraction
       const extractDescription = (item: any): string => {
         if (typeof item === 'string') return item;
@@ -66,7 +65,6 @@ export const CompliancePolicyManager = ({ complianceEnabled = true, client, isAc
         type: 'output',
       }));
       const allPolicies = [...inputPolicies, ...outputPolicies];
-      console.log('Mapped policies:', allPolicies); // DEBUG
       setPolicies(allPolicies);
     } catch (err) {
       setPolicies([]);

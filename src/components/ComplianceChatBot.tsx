@@ -7,14 +7,44 @@ import { ChatInput } from "./ChatInput";
 import { AnalyticsDashboard } from "./AnalyticsDashboard";
 import { CompliancePolicyManager } from "./CompliancePolicyManager";
 
+// UUID generator function (uses crypto.randomUUID if available, otherwise fallback)
+const generateUUID = (): string => {
+  // Try to use native crypto.randomUUID if available
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    try {
+      return crypto.randomUUID();
+    } catch (e) {
+      console.warn('crypto.randomUUID() failed, using fallback:', e);
+    }
+  }
+  
+  // Fallback UUID generator
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+};
+
 import { LoadingIndicator } from "./LoggingIndicator";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar } from "./Avatar";
 import { useTheme } from "./ThemeProvider";
-import { Shield, Brain, RotateCcw, Settings, MessageSquare, Bot, BarChart3, ShieldCheck, User, LogOut } from "lucide-react";
+import { Shield, Brain, RotateCcw, Settings, MessageSquare, Bot, BarChart3, ShieldCheck, User, LogOut, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
 import GuideraLogo from '../components/assets/Guidera.png';
 import { SettingsPage } from "./SettingsPage";
+import { SaveCapsuleDialog } from "./SaveCapsuleDialog";
+import type { SaveCapsuleData } from "./SaveCapsuleDialog";
+import { ExistingCapsuleChoice } from "./ExistingCapsuleChoice";
+import { CapsuleLibrary } from "./CapsuleLibrary";
+import { CapsuleIndicator } from "./CapsuleIndicator";
+import { CreateTeamDialog } from "./CreateTeamDialog";
+import { TeamManagementDialog } from "./TeamManagementDialog";
+import { TeamDetailsPanel } from "./TeamDetailsPanel";
+import { InteractiveTutorial } from "./InteractiveTutorial";
+import { useCapsules } from "@/hooks/use-capsules";
+import type { ChatMessage as CapsuleChatMessage } from "@/lib/capsule-types";
 
 // Mock API call - replace with your actual API endpoint
 const mockApiCall = async (message: string): Promise<Omit<ChatResponse, 'id' | 'type' | 'timestamp'>> => {
@@ -164,6 +194,7 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
   const [redactionEnabled, setRedactionEnabled] = useState(false);
   const [cpValue, setCpValue] = useState<[number, number]>([0.5, 0.5]);
   const [loadingMessageId, setLoadingMessageId] = useState<string | null>(null);
+  const [capsuleContext, setCapsuleContext] = useState<ChatResponse[]>([]); // Hidden context from capsule
 
   // Model preference state
   const [usePreferredModel, setUsePreferredModel] = useState<boolean>(true);
@@ -180,6 +211,38 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
     costSavingsOverTime: [] as Array<{ time: string; savings: number; cumulative: number }>,
     dailyActivity: [] as Array<{ day: string; requests: number; compliance: number; redactions: number }>
   });
+
+  // Capsule state
+  const [saveCapsuleDialogOpen, setSaveCapsuleDialogOpen] = useState(false);
+  const [existingCapsuleChoiceOpen, setExistingCapsuleChoiceOpen] = useState(false);
+  const [dropCapsuleDialogOpen, setDropCapsuleDialogOpen] = useState(false);
+  const [userTeams, setUserTeams] = useState<string[]>([]);
+  const [teamIdMap, setTeamIdMap] = useState<Record<string, string>>({}); // Map team name -> team ID
+  const [capsuleSaving, setCapsuleSaving] = useState(false);
+  
+  // Track the capsule associated with this chat session
+  const [sessionCapsuleId, setSessionCapsuleId] = useState<string | null>(null);
+  const [sessionCapsuleTag, setSessionCapsuleTag] = useState<string>("");
+
+  // Team management state
+  const [teamManagementOpen, setTeamManagementOpen] = useState(false);
+  const [createTeamOpen, setCreateTeamOpen] = useState(false);
+  const [teamDetailsOpen, setTeamDetailsOpen] = useState(false);
+  const [selectedTeamForDetails, setSelectedTeamForDetails] = useState<string | null>(null);
+  const [teamsWithDetails, setTeamsWithDetails] = useState<Array<{
+    id: string;
+    name: string;
+    color?: string;
+    description?: string;
+    role?: string;
+    members?: number;
+  }>>([]);
+
+  // Tutorial state
+  const [tutorialOpen, setTutorialOpen] = useState(false);
+
+  // Initialize capsule hook
+  const capsuleHook = useCapsules(client);
 
   // Update analytics when new messages are processed
   useEffect(() => {
@@ -242,6 +305,196 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
     });
   }, [messages]);
 
+  // Fetch user's capsules and teams on mount
+  useEffect(() => {
+    if (client && userProfile?.email) {
+      capsuleHook.fetchUserCapsules();
+      fetchUserTeams();
+    }
+  }, [client, userProfile?.email]);
+
+  // Fetch user's teams
+  const fetchUserTeams = async () => {
+    if (!client || !userProfile?.email) {
+      // Set placeholder teams if we can't fetch
+      const placeholderTeams = [
+        { id: "plant", name: "plant", color: "#10b981", description: "Plant team", role: "member" },
+        { id: "house", name: "house", color: "#6366f1", description: "House team", role: "admin" },
+        { id: "Test", name: "Test", color: "#f59e0b", description: "Test team", role: "member" },
+        { id: "Research", name: "Research", color: "#3b82f6", description: "Research team", role: "member" },
+        { id: "Legal", name: "Legal", color: "#ec4899", description: "Legal team", role: "member" },
+      ];
+      setUserTeams(["plant", "house", "Test", "Research", "Legal"]);
+      setTeamIdMap({
+        "plant": "plant",
+        "house": "house",
+        "Test": "Test",
+        "Research": "Research",
+        "Legal": "Legal",
+      });
+      setTeamsWithDetails(placeholderTeams);
+      return;
+    }
+    try {
+      const userDetails = await client.getSingleUser(userProfile.email);
+      
+      // Use real teams from backend if available, otherwise use placeholders
+      const teamNames: string[] = [];
+      const idMap: Record<string, string> = {};
+      const detailedTeams: typeof teamsWithDetails = [];
+      
+      if (userDetails && userDetails.teams && userDetails.teams.length > 0) {
+        // Use real teams from backend
+        userDetails.teams.forEach((team: any) => {
+          if (typeof team === 'string') {
+            teamNames.push(team);
+            idMap[team] = team;
+            detailedTeams.push({ id: team, name: team });
+          } else if (typeof team === 'object' && team !== null) {
+            const teamId = team.team_id || team.id || team._id;
+            const teamName = team.name || teamId;
+            if (teamId && teamName) {
+              teamNames.push(teamName);
+              idMap[teamName] = teamId;
+              detailedTeams.push({
+                id: teamId,
+                name: teamName,
+                color: team.color,
+                description: team.description,
+                role: team.role,
+              });
+            }
+          }
+        });
+      } else {
+        // No teams from backend, use placeholders with correct names
+        const placeholderTeams = [
+          { id: "plant", name: "plant", color: "#10b981", description: "Plant team", role: "member" },
+          { id: "house", name: "house", color: "#6366f1", description: "House team", role: "admin" },
+          { id: "Test", name: "Test", color: "#f59e0b", description: "Test team", role: "member" },
+          { id: "Research", name: "Research", color: "#3b82f6", description: "Research team", role: "member" },
+          { id: "Legal", name: "Legal", color: "#ec4899", description: "Legal team", role: "member" },
+        ];
+        placeholderTeams.forEach((placeholder) => {
+          teamNames.push(placeholder.name);
+          idMap[placeholder.name] = placeholder.id;
+          detailedTeams.push(placeholder);
+        });
+      }
+      
+      setUserTeams(teamNames);
+      setTeamIdMap(idMap);
+      setTeamsWithDetails(detailedTeams);
+      
+      if (teamNames.length > 0) {
+        toast.success(`Loaded ${teamNames.length} team${teamNames.length !== 1 ? 's' : ''}`, {
+          description: `${teamNames.slice(0, 3).join(', ')}${teamNames.length > 3 ? '...' : ''}`
+        });
+      }
+    } catch (error) {
+      console.error('[ComplianceChatBot] Failed to fetch user teams:', error);
+      toast.error('Failed to load teams', {
+        description: 'Using placeholder teams'
+      });
+      // Keep placeholder teams on error with correct names
+      const placeholderTeams = [
+        { id: "plant", name: "plant", color: "#10b981", description: "Plant team", role: "member" },
+        { id: "house", name: "house", color: "#6366f1", description: "House team", role: "admin" },
+        { id: "Test", name: "Test", color: "#f59e0b", description: "Test team", role: "member" },
+        { id: "Research", name: "Research", color: "#3b82f6", description: "Research team", role: "member" },
+        { id: "Legal", name: "Legal", color: "#ec4899", description: "Legal team", role: "member" },
+      ];
+      setUserTeams(["plant", "house", "Test", "Research", "Legal"]);
+      setTeamIdMap({
+        "plant": "plant",
+        "house": "house",
+        "Test": "Test",
+        "Research": "Research",
+        "Legal": "Legal",
+      });
+      setTeamsWithDetails(placeholderTeams);
+    }
+  };
+
+  // Team management handlers
+  const handleManageTeams = () => {
+    setTeamManagementOpen(true);
+  };
+
+  const handleCreateTeam = async (name: string, description: string, color: string) => {
+    try {
+      // TODO: Call backend to create team
+      toast.success("Team created!", {
+        description: `${name} has been created successfully`
+      });
+      // Refresh teams
+      await fetchUserTeams();
+    } catch (error) {
+      console.error("Failed to create team:", error);
+      toast.error("Failed to create team", {
+        description: error instanceof Error ? error.message : "Please try again"
+      });
+      throw error;
+    }
+  };
+
+  const handleSelectTeamFromManagement = (teamId: string) => {
+    const team = teamsWithDetails.find(t => t.id === teamId);
+    if (team) {
+      setSelectedTeamForDetails(teamId);
+      setTeamDetailsOpen(true);
+      setTeamManagementOpen(false);
+    }
+  };
+
+  const handleAddMember = async (email: string) => {
+    try {
+      // TODO: Call backend to add member
+      toast.success("Member added!", {
+        description: `${email} has been added to the team`
+      });
+    } catch (error) {
+      console.error("Failed to add member:", error);
+      toast.error("Failed to add member", {
+        description: error instanceof Error ? error.message : "Please try again"
+      });
+      throw error;
+    }
+  };
+
+  const handleRemoveMember = async (email: string) => {
+    try {
+      // TODO: Call backend to remove member
+      toast.success("Member removed!", {
+        description: `${email} has been removed from the team`
+      });
+    } catch (error) {
+      console.error("Failed to remove member:", error);
+      toast.error("Failed to remove member", {
+        description: error instanceof Error ? error.message : "Please try again"
+      });
+      throw error;
+    }
+  };
+
+  const handleDeleteTeam = async () => {
+    try {
+      // TODO: Call backend to delete team
+      toast.success("Team deleted!", {
+        description: "The team has been deleted"
+      });
+      setTeamDetailsOpen(false);
+      setTeamManagementOpen(false);
+      await fetchUserTeams();
+    } catch (error) {
+      console.error("Failed to delete team:", error);
+      toast.error("Failed to delete team", {
+        description: error instanceof Error ? error.message : "Please try again"
+      });
+      throw error;
+    }
+  };
+
   // Handle model preference changes
   const handleModelChange = (modelId: string | null, usePreferred: boolean) => {
     setSelectedModelId(modelId);
@@ -249,9 +502,20 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
   };
 
   const handleSendMessage = async (messageContent: string) => {
-    // Add user message
+    // If capsule context is active, prepend it to the message sent to backend
+    let finalPrompt = messageContent;
+    if (capsuleContext.length > 0) {
+      // Format capsule context as conversation history
+      const contextString = capsuleContext
+        .map(msg => `${msg.type === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
+        .join('\n\n');
+      
+      finalPrompt = `**CAPSULE CONTEXT** (Previous conversation for reference):\n\n${contextString}\n\n---\n\nCurrent question: ${messageContent}`;
+    }
+    
+    // Add user message (show original message in UI, not with context)
     const userMessage: ChatResponse = {
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       type: 'user',
       content: messageContent,
       timestamp: new Date()
@@ -260,7 +524,7 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
     setMessages(prev => [...prev, userMessage]);
 
     // Add loading assistant message
-    const loadingMessageId = crypto.randomUUID();
+    const loadingMessageId = generateUUID();
     const loadingMessage: ChatResponse = {
       id: loadingMessageId,
       type: 'assistant',
@@ -277,8 +541,9 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
       let response;
       if (client) {
         // Use the real client with model preferences
+        // Send finalPrompt (with context if active) to backend
         response = await client.generate(
-          messageContent,
+          finalPrompt,  // Use finalPrompt instead of messageContent
           cpValue[0], // cp_tradeoff_parameter
           complianceEnabled,
           redactionEnabled,
@@ -287,10 +552,10 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
         );
       } else if (onGenerate) {
         // Fallback to onGenerate prop (for backward compatibility)
-        response = await onGenerate(messageContent, cpValue[0], complianceEnabled, redactionEnabled, cpValue[1]);
+        response = await onGenerate(finalPrompt, cpValue[0], complianceEnabled, redactionEnabled, cpValue[1]);
       } else {
         // Fallback to mock
-        response = await mockApiCall(messageContent);
+        response = await mockApiCall(finalPrompt);
       }
 
       // If onGenerate, prettify the response
@@ -371,7 +636,122 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
       await client.clearChat();
     }
     setMessages([]);
+    setCapsuleContext([]); // Also clear capsule context
+    setSessionCapsuleId(null); // Clear session capsule tracking
+    setSessionCapsuleTag("");
     toast.success("Chat history cleared");
+  };
+
+  // ============================================
+  // CAPSULE HELPER FUNCTIONS
+  // ============================================
+
+  // Convert Guidera messages to Capsule format
+  const convertToCapsuleMessages = (messages: ChatResponse[]): CapsuleChatMessage[] => {
+    return messages
+      .filter(msg => msg.type === 'user' || msg.type === 'assistant')
+      .map(msg => ({
+        role: msg.type === 'user' ? 'user' : 'assistant',
+        content: msg.content,
+        timestamp: msg.timestamp.toISOString(),
+      }));
+  };
+
+  // Convert Capsule messages to Guidera format
+  const convertFromCapsuleMessages = (capsuleMessages: CapsuleChatMessage[]): ChatResponse[] => {
+    return capsuleMessages.map(msg => ({
+      id: generateUUID(),
+      type: msg.role === 'user' ? 'user' : 'assistant',
+      content: msg.content,
+      timestamp: new Date(msg.timestamp || new Date()),
+    }));
+  };
+
+  // Handle "Generate Capsule" button click
+  const handleGenerateCapsuleClick = () => {
+    if (sessionCapsuleId && sessionCapsuleTag) {
+      // Show existing capsule choice dialog
+      setExistingCapsuleChoiceOpen(true);
+    } else {
+      // Show normal save dialog
+      setSaveCapsuleDialogOpen(true);
+    }
+  };
+
+  // Handle save capsule (new or version)
+  const handleSaveCapsule = async (data: SaveCapsuleData) => {
+    setCapsuleSaving(true);
+    try {
+      const capsuleMessages = convertToCapsuleMessages(messages);
+      
+      if (data.mode === "new") {
+        // Create new capsule
+        let teamId: string | undefined = undefined;
+        if (data.team && data.team !== "__personal__") {
+          teamId = teamIdMap[data.team] || data.team;
+        }
+        
+        const response = await capsuleHook.createCapsule(
+          capsuleMessages,
+          data.tag || 'Untitled',
+          teamId
+        );
+        
+        // Track this capsule for the current session
+        if (response) {
+          setSessionCapsuleId(response.capsule_id);
+          setSessionCapsuleTag(data.tag || 'Untitled');
+        }
+      } else if (data.mode === "version" && data.capsuleId) {
+        // Add version to existing capsule
+        await capsuleHook.createVersion(data.capsuleId, capsuleMessages);
+      }
+    } finally {
+      setCapsuleSaving(false);
+    }
+  };
+
+  // Handle "New Version" from existing capsule choice
+  const handleNewVersion = async () => {
+    if (!sessionCapsuleId) return;
+    
+    setCapsuleSaving(true);
+    setExistingCapsuleChoiceOpen(false);
+    
+    try {
+      const capsuleMessages = convertToCapsuleMessages(messages);
+      await capsuleHook.createVersion(sessionCapsuleId, capsuleMessages);
+    } finally {
+      setCapsuleSaving(false);
+    }
+  };
+
+  // Handle "New Capsule" from existing capsule choice (create fresh capsule)
+  const handleNewCapsuleFromExisting = () => {
+    setExistingCapsuleChoiceOpen(false);
+    setSaveCapsuleDialogOpen(true);
+  };
+
+  // Handle drop capsule (load)
+  const handleDropCapsule = async (capsuleId: string, versionId: string) => {
+    const capsuleMessages = await capsuleHook.loadCapsule(capsuleId, versionId);
+    const guideraMessages = convertFromCapsuleMessages(capsuleMessages);
+    
+    // Store as hidden context (don't add to visible messages)
+    // This will be sent to backend on next user message
+    setCapsuleContext(guideraMessages);
+    setDropCapsuleDialogOpen(false);
+    
+    // Show a visual indicator that context was added
+    toast.success("Capsule context added!", {
+      description: `${capsuleMessages.length} messages loaded as context`
+    });
+  };
+
+  // Handle clear capsule
+  const handleClearCapsule = () => {
+    capsuleHook.clearActiveCapsule();
+    setCapsuleContext([]); // Clear the hidden context
   };
 
   return (
@@ -399,6 +779,16 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
             </div>
 
             <div className="flex items-center gap-2">
+              {/* Help Button */}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setTutorialOpen(true)}
+                className="h-9 w-9"
+                title="Tutorial"
+              >
+                <HelpCircle className="h-4 w-4" />
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
@@ -482,6 +872,15 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
             </div>
 
             <TabsContent value="chat" className="flex-1 flex flex-col min-h-0 data-[state=inactive]:hidden pb-4">
+              {/* Active Capsule Indicator */}
+              {capsuleHook.activeCapsule && (
+                <div className="mb-4 px-1">
+                  <CapsuleIndicator
+                    onClear={handleClearCapsule}
+                  />
+                </div>
+              )}
+
               {/* Chat Messages */}
               <div className="flex-1 overflow-y-auto py-4 space-y-4 px-1 min-h-0">
                 {messages.length === 0 ? (
@@ -549,6 +948,9 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
                   onRedactionToggle={setRedactionEnabled}
                   client={client}
                   onModelChange={handleModelChange}
+                  onGenerateCapsule={handleGenerateCapsuleClick}
+                  onDropCapsule={() => setDropCapsuleDialogOpen(true)}
+                  capsuleDisabled={isLoading}
                 />
               </div>
             </TabsContent>
@@ -561,6 +963,102 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
           </Tabs>
         )}
       </div>
+
+      {/* Capsule Dialogs */}
+      {client && (
+        <>
+          <ExistingCapsuleChoice
+            open={existingCapsuleChoiceOpen}
+            onOpenChange={setExistingCapsuleChoiceOpen}
+            capsuleTag={sessionCapsuleTag}
+            onNewVersion={handleNewVersion}
+            onNewCapsule={handleNewCapsuleFromExisting}
+            isLoading={capsuleSaving}
+          />
+
+          <SaveCapsuleDialog
+            open={saveCapsuleDialogOpen}
+            onOpenChange={setSaveCapsuleDialogOpen}
+            onSave={handleSaveCapsule}
+            messageCount={messages.length}
+            userCapsules={capsuleHook.userCapsules}
+            teams={userTeams}
+            teamIdMap={teamIdMap}
+            isLoading={capsuleSaving}
+          />
+
+          <CapsuleLibrary
+            open={dropCapsuleDialogOpen}
+            onOpenChange={setDropCapsuleDialogOpen}
+            capsules={capsuleHook.userCapsules}
+            loading={capsuleHook.loading}
+            onLoadCapsule={handleDropCapsule}
+            onDeleteCapsule={capsuleHook.deleteCapsule}
+            onRefresh={capsuleHook.fetchUserCapsules}
+            teams={userTeams}
+            teamIdMap={teamIdMap}
+          />
+
+          <TeamManagementDialog
+            open={teamManagementOpen}
+            onOpenChange={setTeamManagementOpen}
+            teams={teamsWithDetails}
+            loading={false}
+            onSelectTeam={handleSelectTeamFromManagement}
+            onCreateTeam={() => {
+              setTeamManagementOpen(false);
+              setCreateTeamOpen(true);
+            }}
+            onWorkPrivately={() => {
+              setTeamManagementOpen(false);
+            }}
+            onRefresh={fetchUserTeams}
+          />
+
+          <CreateTeamDialog
+            open={createTeamOpen}
+            onOpenChange={setCreateTeamOpen}
+            onCreateTeam={handleCreateTeam}
+            isLoading={false}
+          />
+
+          <TeamDetailsPanel
+            open={teamDetailsOpen && selectedTeamForDetails !== null}
+            onOpenChange={setTeamDetailsOpen}
+            team={
+              selectedTeamForDetails
+                ? (() => {
+                    const foundTeam = teamsWithDetails.find(t => t.id === selectedTeamForDetails);
+                    return foundTeam
+                      ? {
+                          id: foundTeam.id,
+                          name: foundTeam.name,
+                          description: foundTeam.description,
+                          color: foundTeam.color,
+                          members: [],
+                          userRole: foundTeam.role || "member",
+                        }
+                      : null;
+                  })()
+                : null
+            }
+            loading={false}
+            onAddMember={handleAddMember}
+            onRemoveMember={handleRemoveMember}
+            onDeleteTeam={handleDeleteTeam}
+            onBack={() => {
+              setTeamDetailsOpen(false);
+              setTeamManagementOpen(true);
+              setSelectedTeamForDetails(null);
+            }}
+          />
+
+          <InteractiveTutorial
+            open={tutorialOpen}
+            onClose={() => setTutorialOpen(false)}
+          />
+        </>
+      )}
     </div>
   );
 };

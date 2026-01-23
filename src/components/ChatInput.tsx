@@ -10,6 +10,7 @@ import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover
 import { useTheme } from "./ThemeProvider";
 import { PromptSuggestionsDialog } from "./PromptSuggestionsDialog";
 import { ModelSelector } from "./ModelSelector";
+import { CapsuleControlBar } from "./CapsuleControlBar";
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
@@ -23,6 +24,10 @@ interface ChatInputProps {
   onRedactionToggle?: (enabled: boolean) => void;
   client?: any;
   onModelChange?: (modelId: string | null, usePreferred: boolean) => void;
+  // Capsule props
+  onGenerateCapsule?: () => void;
+  onDropCapsule?: () => void;
+  capsuleDisabled?: boolean;
 }
 
 interface AxisValues {
@@ -43,7 +48,10 @@ export const ChatInput = ({
   redactionEnabled = false,
   onRedactionToggle,
   client,
-  onModelChange
+  onModelChange,
+  onGenerateCapsule,
+  onDropCapsule,
+  capsuleDisabled = false,
 }: ChatInputProps) => {
   const [message, setMessage] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -290,6 +298,17 @@ export const ChatInput = ({
               client={client}
               onModelChange={onModelChange}
             />
+
+            {/* Capsule Button - positioned after Model Selector */}
+            {onGenerateCapsule && onDropCapsule && (
+              <div className="ml-2">
+                <CapsuleControlBar
+                  onGenerateCapsule={onGenerateCapsule}
+                  onDropCapsule={onDropCapsule}
+                  disabled={capsuleDisabled}
+                />
+              </div>
+            )}
           </div>
 
           {/* Right side - Compliance Toggle, Redaction Toggle, and Send Button */}
