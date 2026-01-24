@@ -11,8 +11,8 @@ import type {
   VersionListResponse,
 } from './capsule-types';
 
-// Local development backend
-const BASE_URL = 'http://localhost:8000';
+
+const BASE_URL = 'https://backend.tilantra.com';
 
 export class BrowserGuideraClient {
   private apiBaseUrl: string;
