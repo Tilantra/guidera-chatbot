@@ -63,7 +63,7 @@ export function CapsuleLibrary({
   teamIdMap = {},
 }: CapsuleLibraryProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedTeam, setSelectedTeam] = useState<string>("all");
+  const [selectedTeam, setSelectedTeam] = useState<string>(teams.length > 0 ? "all" : "personal");
   const [loadingCapsuleId, setLoadingCapsuleId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [capsuleToDelete, setCapsuleToDelete] = useState<string | null>(null);
@@ -79,6 +79,15 @@ export function CapsuleLibrary({
       onRefresh();
     }
   }, [open, onRefresh]);
+
+  // Sync selected team when teams list loads
+  useEffect(() => {
+    if (teams.length > 0 && selectedTeam === "personal") {
+      setSelectedTeam("all");
+    } else if (teams.length === 0 && selectedTeam === "all") {
+      setSelectedTeam("personal");
+    }
+  }, [teams]);
 
   const filteredCapsules = capsules.filter((capsule) => {
     const matchesSearch =
@@ -183,22 +192,22 @@ export function CapsuleLibrary({
               />
             </div>
 
-            {teams.length > 0 && (
-              <Select value={selectedTeam} onValueChange={setSelectedTeam}>
-                <SelectTrigger className="w-full h-10 bg-background/40 border-border/40 rounded-xl focus:ring-2 focus:ring-primary/20 transition-all text-xs font-bold uppercase tracking-wider">
-                  <SelectValue placeholder="All Sources" />
-                </SelectTrigger>
-                <SelectContent className="bg-card/95 backdrop-blur-xl border-border/40">
+            <Select value={selectedTeam} onValueChange={setSelectedTeam}>
+              <SelectTrigger className="w-full h-10 bg-background/40 border-border/40 rounded-xl focus:ring-2 focus:ring-primary/20 transition-all text-xs font-bold uppercase tracking-wider">
+                <SelectValue placeholder="Select Source" />
+              </SelectTrigger>
+              <SelectContent className="bg-card/95 backdrop-blur-xl border-border/40">
+                {teams.length > 0 && (
                   <SelectItem value="all" className="text-xs font-bold uppercase tracking-wider">All Sources</SelectItem>
-                  <SelectItem value="personal" className="text-xs font-bold uppercase tracking-wider">Personal</SelectItem>
-                  {teams.map((team) => (
-                    <SelectItem key={team} value={team} className="text-xs font-bold uppercase tracking-wider">
-                      {team}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
+                )}
+                <SelectItem value="personal" className="text-xs font-bold uppercase tracking-wider">Personal</SelectItem>
+                {teams.map((team) => (
+                  <SelectItem key={team} value={team} className="text-xs font-bold uppercase tracking-wider">
+                    {team}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </SheetHeader>
 

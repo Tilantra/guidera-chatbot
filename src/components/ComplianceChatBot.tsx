@@ -17,9 +17,9 @@ const generateUUID = (): string => {
       console.warn('crypto.randomUUID() failed, using fallback:', e);
     }
   }
-  
+
   // Fallback UUID generator
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
     const r = Math.random() * 16 | 0;
     const v = c === 'x' ? r : (r & 0x3 | 0x8);
     return v.toString(16);
@@ -219,7 +219,7 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
   const [userTeams, setUserTeams] = useState<string[]>([]);
   const [teamIdMap, setTeamIdMap] = useState<Record<string, string>>({}); // Map team name -> team ID
   const [capsuleSaving, setCapsuleSaving] = useState(false);
-  
+
   // Track the capsule associated with this chat session
   const [sessionCapsuleId, setSessionCapsuleId] = useState<string | null>(null);
   const [sessionCapsuleTag, setSessionCapsuleTag] = useState<string>("");
@@ -316,33 +316,16 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
   // Fetch user's teams
   const fetchUserTeams = async () => {
     if (!client || !userProfile?.email) {
-      // Set placeholder teams if we can't fetch
-      const placeholderTeams = [
-        { id: "plant", name: "plant", color: "#10b981", description: "Plant team", role: "member" },
-        { id: "house", name: "house", color: "#6366f1", description: "House team", role: "admin" },
-        { id: "Test", name: "Test", color: "#f59e0b", description: "Test team", role: "member" },
-        { id: "Research", name: "Research", color: "#3b82f6", description: "Research team", role: "member" },
-        { id: "Legal", name: "Legal", color: "#ec4899", description: "Legal team", role: "member" },
-      ];
-      setUserTeams(["plant", "house", "Test", "Research", "Legal"]);
-      setTeamIdMap({
-        "plant": "plant",
-        "house": "house",
-        "Test": "Test",
-        "Research": "Research",
-        "Legal": "Legal",
-      });
-      setTeamsWithDetails(placeholderTeams);
       return;
     }
     try {
       const userDetails = await client.getSingleUser(userProfile.email);
-      
+
       // Use real teams from backend if available, otherwise use placeholders
       const teamNames: string[] = [];
       const idMap: Record<string, string> = {};
       const detailedTeams: typeof teamsWithDetails = [];
-      
+
       if (userDetails && userDetails.teams && userDetails.teams.length > 0) {
         // Use real teams from backend
         userDetails.teams.forEach((team: any) => {
@@ -366,26 +349,12 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
             }
           }
         });
-      } else {
-        // No teams from backend, use placeholders with correct names
-        const placeholderTeams = [
-          { id: "plant", name: "plant", color: "#10b981", description: "Plant team", role: "member" },
-          { id: "house", name: "house", color: "#6366f1", description: "House team", role: "admin" },
-          { id: "Test", name: "Test", color: "#f59e0b", description: "Test team", role: "member" },
-          { id: "Research", name: "Research", color: "#3b82f6", description: "Research team", role: "member" },
-          { id: "Legal", name: "Legal", color: "#ec4899", description: "Legal team", role: "member" },
-        ];
-        placeholderTeams.forEach((placeholder) => {
-          teamNames.push(placeholder.name);
-          idMap[placeholder.name] = placeholder.id;
-          detailedTeams.push(placeholder);
-        });
       }
-      
+
       setUserTeams(teamNames);
       setTeamIdMap(idMap);
       setTeamsWithDetails(detailedTeams);
-      
+
       if (teamNames.length > 0) {
         toast.success(`Loaded ${teamNames.length} team${teamNames.length !== 1 ? 's' : ''}`, {
           description: `${teamNames.slice(0, 3).join(', ')}${teamNames.length > 3 ? '...' : ''}`
@@ -393,26 +362,11 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
       }
     } catch (error) {
       console.error('[ComplianceChatBot] Failed to fetch user teams:', error);
-      toast.error('Failed to load teams', {
-        description: 'Using placeholder teams'
-      });
-      // Keep placeholder teams on error with correct names
-      const placeholderTeams = [
-        { id: "plant", name: "plant", color: "#10b981", description: "Plant team", role: "member" },
-        { id: "house", name: "house", color: "#6366f1", description: "House team", role: "admin" },
-        { id: "Test", name: "Test", color: "#f59e0b", description: "Test team", role: "member" },
-        { id: "Research", name: "Research", color: "#3b82f6", description: "Research team", role: "member" },
-        { id: "Legal", name: "Legal", color: "#ec4899", description: "Legal team", role: "member" },
-      ];
-      setUserTeams(["plant", "house", "Test", "Research", "Legal"]);
-      setTeamIdMap({
-        "plant": "plant",
-        "house": "house",
-        "Test": "Test",
-        "Research": "Research",
-        "Legal": "Legal",
-      });
-      setTeamsWithDetails(placeholderTeams);
+      toast.error('Failed to load teams');
+
+      setUserTeams([]);
+      setTeamIdMap({});
+      setTeamsWithDetails([]);
     }
   };
 
@@ -509,10 +463,10 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
       const contextString = capsuleContext
         .map(msg => `${msg.type === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
         .join('\n\n');
-      
+
       finalPrompt = `**CAPSULE CONTEXT** (Previous conversation for reference):\n\n${contextString}\n\n---\n\nCurrent question: ${messageContent}`;
     }
-    
+
     // Add user message (show original message in UI, not with context)
     const userMessage: ChatResponse = {
       id: generateUUID(),
@@ -683,20 +637,20 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
     setCapsuleSaving(true);
     try {
       const capsuleMessages = convertToCapsuleMessages(messages);
-      
+
       if (data.mode === "new") {
         // Create new capsule
         let teamId: string | undefined = undefined;
         if (data.team && data.team !== "__personal__") {
           teamId = teamIdMap[data.team] || data.team;
         }
-        
+
         const response = await capsuleHook.createCapsule(
           capsuleMessages,
           data.tag || 'Untitled',
           teamId
         );
-        
+
         // Track this capsule for the current session
         if (response) {
           setSessionCapsuleId(response.capsule_id);
@@ -714,10 +668,10 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
   // Handle "New Version" from existing capsule choice
   const handleNewVersion = async () => {
     if (!sessionCapsuleId) return;
-    
+
     setCapsuleSaving(true);
     setExistingCapsuleChoiceOpen(false);
-    
+
     try {
       const capsuleMessages = convertToCapsuleMessages(messages);
       await capsuleHook.createVersion(sessionCapsuleId, capsuleMessages);
@@ -736,12 +690,12 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
   const handleDropCapsule = async (capsuleId: string, versionId: string) => {
     const capsuleMessages = await capsuleHook.loadCapsule(capsuleId, versionId);
     const guideraMessages = convertFromCapsuleMessages(capsuleMessages);
-    
+
     // Store as hidden context (don't add to visible messages)
     // This will be sent to backend on next user message
     setCapsuleContext(guideraMessages);
     setDropCapsuleDialogOpen(false);
-    
+
     // Show a visual indicator that context was added
     toast.success("Capsule context added!", {
       description: `${capsuleMessages.length} messages loaded as context`
@@ -1028,18 +982,18 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
             team={
               selectedTeamForDetails
                 ? (() => {
-                    const foundTeam = teamsWithDetails.find(t => t.id === selectedTeamForDetails);
-                    return foundTeam
-                      ? {
-                          id: foundTeam.id,
-                          name: foundTeam.name,
-                          description: foundTeam.description,
-                          color: foundTeam.color,
-                          members: [],
-                          userRole: foundTeam.role || "member",
-                        }
-                      : null;
-                  })()
+                  const foundTeam = teamsWithDetails.find(t => t.id === selectedTeamForDetails);
+                  return foundTeam
+                    ? {
+                      id: foundTeam.id,
+                      name: foundTeam.name,
+                      description: foundTeam.description,
+                      color: foundTeam.color,
+                      members: [],
+                      userRole: foundTeam.role || "member",
+                    }
+                    : null;
+                })()
                 : null
             }
             loading={false}
