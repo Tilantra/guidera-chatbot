@@ -152,21 +152,30 @@ export const ChatInput = ({
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
-            className="flex-1 min-h-[90px] resize-none border border-border/20 bg-background/30 px-3 py-2 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all duration-200 text-sm placeholder:text-muted-foreground/50"
+            className="flex-1 min-h-[90px] resize-none border border-border/20 bg-background/30 pl-3 pr-12 py-2 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all duration-200 text-sm placeholder:text-muted-foreground/50"
             disabled={isLoading}
           />
           {client && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={handleMagicButtonClick}
-              disabled={!message.trim() || isLoading}
-              className="absolute top-2 right-2 h-8 w-8 p-0 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-lg transition-all shadow-sm active:scale-95"
-              title="Generate prompt suggestions"
-            >
-              <Wand2 className="h-4 w-4" />
-            </Button>
+            <div className="absolute top-2 right-2 flex flex-col gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleMagicButtonClick}
+                disabled={!message.trim() || isLoading}
+                className="h-8 w-8 p-0 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-lg transition-all shadow-sm active:scale-95"
+                title="Generate prompt suggestions"
+              >
+                <Wand2 className="h-4 w-4" />
+              </Button>
+              {onGenerateCapsule && onDropCapsule && (
+                <CapsuleControlBar
+                  onGenerateCapsule={onGenerateCapsule}
+                  onDropCapsule={onDropCapsule}
+                  disabled={capsuleDisabled}
+                />
+              )}
+            </div>
           )}
         </div>
 
@@ -298,17 +307,6 @@ export const ChatInput = ({
               client={client}
               onModelChange={onModelChange}
             />
-
-            {/* Capsule Button - positioned after Model Selector */}
-            {onGenerateCapsule && onDropCapsule && (
-              <div className="ml-2">
-                <CapsuleControlBar
-                  onGenerateCapsule={onGenerateCapsule}
-                  onDropCapsule={onDropCapsule}
-                  disabled={capsuleDisabled}
-                />
-              </div>
-            )}
           </div>
 
           {/* Right side - Compliance Toggle, Redaction Toggle, and Send Button */}

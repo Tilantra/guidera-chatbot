@@ -73,7 +73,7 @@ export function SaveCapsuleDialog({
     try {
       // Convert placeholder to empty string for backend
       const teamValue = selectedTeam === "__personal__" ? "" : selectedTeam;
-      
+
       await onSave({
         mode,
         tag: mode === "new" ? tag : undefined,
@@ -94,7 +94,7 @@ export function SaveCapsuleDialog({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            💊 Generate Capsule
+            Generate Capsule
           </DialogTitle>
           <DialogDescription>
             Save {messageCount} message{messageCount !== 1 ? "s" : ""} as a capsule
@@ -117,9 +117,8 @@ export function SaveCapsuleDialog({
               />
               <Label
                 htmlFor="version"
-                className={`font-normal cursor-pointer ${
-                  userCapsules.length === 0 ? "text-muted-foreground" : ""
-                }`}
+                className={`font-normal cursor-pointer ${userCapsules.length === 0 ? "text-muted-foreground" : ""
+                  }`}
               >
                 Add Version to Existing Capsule
                 {userCapsules.length === 0 && " (no capsules yet)"}
@@ -150,10 +149,10 @@ export function SaveCapsuleDialog({
                     <SelectValue placeholder="Select team (or leave empty for personal)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="__personal__">🔒 Work Privately (Personal)</SelectItem>
+                    <SelectItem value="__personal__">Work Privately (Personal)</SelectItem>
                     {teams.map((teamName) => (
                       <SelectItem key={teamName} value={teamName}>
-                        👥 {teamName}
+                        {teamName}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -169,10 +168,10 @@ export function SaveCapsuleDialog({
                 </SelectTrigger>
                 <SelectContent>
                   {userCapsules.map((capsule) => {
-                    const teamDisplay = capsule.team 
+                    const teamDisplay = capsule.team
                       ? (teamNameMap[capsule.team] || capsule.team)
                       : "Personal";
-                    
+
                     return (
                       <SelectItem key={capsule.capsule_id} value={capsule.capsule_id}>
                         <div className="flex flex-col">
