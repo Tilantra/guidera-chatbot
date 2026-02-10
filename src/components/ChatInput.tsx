@@ -28,6 +28,8 @@ interface ChatInputProps {
   onGenerateCapsule?: () => void;
   onDropCapsule?: () => void;
   capsuleDisabled?: boolean;
+  controlGridOpen?: boolean;
+  onControlGridOpenChange?: (open: boolean) => void;
 }
 
 interface AxisValues {
@@ -52,6 +54,8 @@ export const ChatInput = ({
   onGenerateCapsule,
   onDropCapsule,
   capsuleDisabled = false,
+  controlGridOpen,
+  onControlGridOpenChange,
 }: ChatInputProps) => {
   const [message, setMessage] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -161,6 +165,7 @@ export const ChatInput = ({
                 type="button"
                 variant="ghost"
                 size="sm"
+                id="magic-wand-button"
                 onClick={handleMagicButtonClick}
                 disabled={!message.trim() || isLoading}
                 className="h-8 w-8 p-0 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-lg transition-all shadow-sm active:scale-95"
@@ -185,11 +190,12 @@ export const ChatInput = ({
           <div className="flex items-end gap-3">
             {/* ControlGrid Button and Popover */}
             <div className="flex flex-col flex-1 max-w-xs">
-              <Popover>
+              <Popover open={controlGridOpen} onOpenChange={onControlGridOpenChange}>
                 <PopoverTrigger asChild>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
+                      id="control-grid-trigger"
                       className="min-w-[100px] h-8 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold shadow-md shadow-primary/20 hover:bg-primary/90 hover:shadow-primary/30 transition-all active:scale-95 flex items-center justify-center gap-1.5"
                     >
                       <Grid className="w-3.5 h-3.5" />

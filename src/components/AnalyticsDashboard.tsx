@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { ChevronDown, Shield, Cloud } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/seperator";
 import {
-  DollarSign, AlertTriangle, Brain, BarChart3, Info, TrendingUp,
-  Lock, CheckCircle, XCircle, Activity, Zap, Target,
-  RefreshCw, ArrowUp, Minus
+  AlertTriangle, Brain, BarChart3, TrendingUp,
+  Lock, CheckCircle, XCircle, Activity, Zap,
+  RefreshCw, Loader2, Cloud, Shield, ChevronDown
 } from "lucide-react";
-import { RotateCcw, Loader2 } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, ScatterChart, Scatter } from "recharts";
-import { LineChart, Line, CartesianGrid, Area, AreaChart } from "recharts";
+import { Badge } from "@/components/ui/badge";
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  Legend, ScatterChart, Scatter, Area, AreaChart, CartesianGrid
+} from "recharts";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -81,37 +81,7 @@ export const AnalyticsDashboard = ({ client }: { client: any }) => {
   const lifetime = analytics.lifetime || {};
   const modelUsage = lifetime.model_usage || {};
 
-  // Metrics
-  const metrics = [
-    {
-      title: "Total Requests",
-      value: Object.values(modelUsage).reduce((a: number, b: number) => a + b, 0).toString(),
-      icon: Brain,
-      color: "text-primary",
-      bgColor: "bg-primary/10"
-    },
-    {
-      title: "Cost Efficiency",
-      value: `${lifetime.percent_cost_saved?.toFixed(2) ?? 0}%`,
-      icon: TrendingUp,
-      color: "text-green-600 dark:text-green-400",
-      bgColor: "bg-green-50 dark:bg-green-950/50"
-    },
-    {
-      title: "Compliance Failures",
-      value: lifetime.compliance_failures?.toString() ?? "0",
-      icon: Shield,
-      color: "text-orange-600 dark:text-orange-400",
-      bgColor: "bg-orange-50 dark:bg-orange-950/50"
-    },
-    {
-      title: "Redactions",
-      value: lifetime.sensitive_redactions?.toString() ?? "0",
-      icon: AlertTriangle,
-      color: "text-red-600 dark:text-red-400",
-      bgColor: "bg-red-50 dark:bg-red-950/50"
-    }
-  ];
+  // Get model usage values for calculations
 
   // Bar chart data for model usage
   const barData = Object.entries(modelUsage).map(([model, count]) => ({
@@ -122,32 +92,6 @@ export const AnalyticsDashboard = ({ client }: { client: any }) => {
   // Top models (sorted by usage)
   const topModels = [...barData].sort((a, b) => b.count - a.count).slice(0, 3);
 
-  // Predictive Line Chart Data
-  const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const daysElapsed = Math.max(1, Math.ceil((now.getTime() - startOfMonth.getTime()) / (1000 * 60 * 60 * 24)));
-  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-  const avgPerDay = (lifetime.total_cost_saved || 0) / daysElapsed;
-  const forecastTotal = avgPerDay * daysInMonth;
-
-  const lineChartData = [];
-  for (let d = 1; d <= daysInMonth; d++) {
-    if (d <= daysElapsed) {
-      // Linear actuals (since we don't have daily data)
-      lineChartData.push({
-        day: d,
-        actual: avgPerDay * d,
-        forecast: null
-      });
-    } else {
-      lineChartData.push({
-        day: d,
-        actual: null,
-        forecast: avgPerDay * d
-      });
-    }
-  }
-
   // Get model usage values for calculations
   const modelUsageValues = Object.values(modelUsage || {}) as number[];
   const totalRequests: number = modelUsageValues.reduce((a: number, b: number) => a + Number(b || 0), 0);
@@ -156,9 +100,10 @@ export const AnalyticsDashboard = ({ client }: { client: any }) => {
   // Performance line chart data - last 7 days
   const performanceLineData = analytics.trends?.trends || [];
 
+
   // Model latency data for scatter plot (current usage patterns)
   const latencyScatterData = (analytics.model_latency?.models || []).map((m, i) => {
-    const palette = ['#ef4444', '#8b5cf6', '#10b981', '#f59e0b', '#3b82f6'];
+    const palette = ['#e11d48', '#2563eb', '#059669', '#d97706', '#4f46e5'];
     return {
       model: m.model_id,
       latency: m.latency_ms,
@@ -168,434 +113,360 @@ export const AnalyticsDashboard = ({ client }: { client: any }) => {
   });
 
   return (
-    <div className="w-full max-w-[95vw] mx-auto p-4 bg-gradient-to-br from-background via-background to-secondary/5">
+    <div className="w-full max-w-[95vw] mx-auto p-6 space-y-8 animate-fade-in">
       {/* Header Section */}
-      <div className="flex flex-col items-start lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+      <div className="flex flex-col items-start lg:flex-row lg:items-center lg:justify-between gap-4 pb-6 border-b">
         <div className="space-y-1">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-            Analytics Dashboard
+          <h1 className="text-2xl font-bold tracking-tight">
+            Analytics Overview
           </h1>
-          <p className="text-xs text-muted-foreground flex items-center gap-2">
-            <Activity className="h-3 w-3" />
-            Real-time insights and performance metrics
+          <p className="text-sm text-muted-foreground flex items-center gap-2">
+            <Activity className="h-4 w-4" />
+            Performance insights and compliance metrics
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="text-[11px] text-muted-foreground bg-muted/30 px-2 py-1 rounded-md">
+        <div className="flex items-center gap-4">
+          <div className="text-xs font-medium text-muted-foreground bg-secondary px-3 py-1.5 rounded-full">
             Last updated: {lastUpdated}
           </div>
-          <button
+          <Button
             onClick={fetchAnalytics}
             disabled={loading}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold transition-all disabled:opacity-50"
+            variant="outline"
+            size="sm"
+            className="font-semibold shadow-sm"
           >
-            {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
-            Refresh
-          </button>
+            {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+            Refresh Data
+          </Button>
         </div>
       </div>
 
-      {/* Key Metrics Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <Card className="relative overflow-hidden bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/50 dark:to-blue-900/50 border-0">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-blue-700/70 dark:text-blue-300/70 leading-none mb-1">Total Requests</p>
-                <p className="text-xl font-bold text-blue-900 dark:text-blue-100">{totalRequests.toLocaleString()}</p>
+      {/* High-Level Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[
+          { label: "Total Requests", value: totalRequests.toLocaleString(), icon: Brain, color: "text-purple-600", bg: "bg-purple-50" },
+          { label: "Cost Efficiency", value: `${efficiencyScore.toFixed(1)}%`, icon: TrendingUp, color: "text-violet-600", bg: "bg-violet-50" },
+          { label: "Compliance Violations", value: lifetime.compliance_failures || 0, icon: AlertTriangle, color: "text-orange-600", bg: "bg-orange-50" },
+          { label: "Models", value: barData.length, icon: Zap, color: "text-fuchsia-600", bg: "bg-fuchsia-50" }
+        ].map((stat, i) => (
+          <Card key={i} className="border-border/40 shadow-sm hover:shadow-md transition-all">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">{stat.label}</p>
+                  <p className="text-2xl font-bold tracking-tight">{stat.value}</p>
+                </div>
+                <div className={`h-12 w-12 rounded-xl ${stat.bg} dark:bg-muted/10 flex items-center justify-center`}>
+                  <stat.icon className={`h-6 w-6 ${stat.color}`} />
+                </div>
               </div>
-              <div className="h-8 w-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                <Brain className="h-4 w-4 text-blue-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="relative overflow-hidden bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/50 dark:to-green-900/50 border-0">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-green-700/70 dark:text-green-300/70 leading-none mb-1">Efficiency</p>
-                <p className="text-xl font-bold text-green-900 dark:text-green-100">{efficiencyScore.toFixed(1)}%</p>
-              </div>
-              <div className="h-8 w-8 rounded-lg bg-green-500/20 flex items-center justify-center">
-                <TrendingUp className="h-4 w-4 text-green-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="relative overflow-hidden bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950/50 dark:to-red-900/50 border-0">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-red-700/70 dark:text-red-300/70 leading-none mb-1">Violations</p>
-                <p className="text-xl font-bold text-red-900 dark:text-red-100">{lifetime.compliance_failures || 0}</p>
-              </div>
-              <div className="h-8 w-8 rounded-lg bg-red-500/20 flex items-center justify-center">
-                <AlertTriangle className="h-4 w-4 text-red-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="relative overflow-hidden bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/50 dark:to-amber-900/50 border-0">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-amber-700/70 dark:text-amber-300/70 leading-none mb-1">Routing Nodes</p>
-                <p className="text-xl font-bold text-amber-900 dark:text-amber-100">{barData.length}</p>
-              </div>
-              <div className="h-8 w-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
-                <Zap className="h-4 w-4 text-amber-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-
-        <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="space-y-8">
           {/* Security & Compliance Section */}
-          <CollapsibleCard title="Security & Compliance" defaultOpen={true}>
-            <Card className="bg-gradient-to-br from-card to-secondary/5 border-0 shadow-lg">
-              <CardHeader className="pb-4">
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 dark:bg-green-950/30">
-                    <div className="flex items-center gap-3">
-                      <CheckCircle className="h-5 w-5 text-green-600" />
-                      <div>
-                        <p className="font-medium text-green-900 dark:text-green-100">Compliance Passed</p>
-                        <p className="text-sm text-green-700 dark:text-green-300">All checks successful</p>
-                      </div>
+          <Card className="border-border/40 shadow-sm overflow-hidden">
+            <CardHeader className="bg-muted/30 border-b py-4">
+              <CardTitle className="text-base font-bold flex items-center gap-2">
+                <Shield className="h-4 w-4 text-primary" />
+                Compliance Status
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 gap-4">
+                <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/30 border border-border/50">
+                  <div className="flex items-center gap-4">
+                    <div className="h-10 w-10 rounded-full bg-success/10 flex items-center justify-center">
+                      <CheckCircle className="h-5 w-5 text-success" />
                     </div>
-                    <div className="text-2xl font-bold text-green-900 dark:text-green-100">
-                      {Math.max(0, Number(totalRequests) - Number(lifetime.compliance_failures || 0))}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-red-50 dark:bg-red-950/30">
-                    <div className="flex items-center gap-3">
-                      <XCircle className="h-5 w-5 text-red-600" />
-                      <div>
-                        <p className="font-medium text-red-900 dark:text-red-100">Compliance Failures</p>
-                        <p className="text-sm text-red-700 dark:text-red-300">Blocked content</p>
-                      </div>
-                    </div>
-                    <div className="text-2xl font-bold text-red-900 dark:text-red-100">
-                      {lifetime.compliance_failures || 0}
+                    <div>
+                      <p className="font-bold text-sm">Checks Passed</p>
+                      <p className="text-xs text-muted-foreground">Successfully validated content</p>
                     </div>
                   </div>
-
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-orange-50 dark:bg-orange-950/30">
-                    <div className="flex items-center gap-3">
-                      <AlertTriangle className="h-5 w-5 text-orange-600" />
-                      <div>
-                        <p className="font-medium text-orange-900 dark:text-orange-100">Redactions</p>
-                        <p className="text-sm text-orange-700 dark:text-orange-300">Sensitive data protected</p>
-                      </div>
-                    </div>
-                    <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">
-                      {lifetime.sensitive_redactions || 0}
-                    </div>
+                  <div className="text-2xl font-bold">
+                    {Math.max(0, Number(totalRequests) - Number(lifetime.compliance_failures || 0))}
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </CollapsibleCard>
+
+                <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/30 border border-border/50">
+                  <div className="flex items-center gap-4">
+                    <div className="h-10 w-10 rounded-full bg-destructive/10 flex items-center justify-center">
+                      <XCircle className="h-5 w-5 text-destructive" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-sm">Policy Violations</p>
+                      <p className="text-xs text-muted-foreground">Blocked or flagged content</p>
+                    </div>
+                  </div>
+                  <div className="text-2xl font-bold">
+                    {lifetime.compliance_failures || 0}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/30 border border-border/50">
+                  <div className="flex items-center gap-4">
+                    <div className="h-10 w-10 rounded-full bg-warning/10 flex items-center justify-center">
+                      <AlertTriangle className="h-5 w-5 text-warning" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-sm">Data Redactions</p>
+                      <p className="text-xs text-muted-foreground">Sensitive PII instances hidden</p>
+                    </div>
+                  </div>
+                  <div className="text-2xl font-bold">
+                    {lifetime.sensitive_redactions || 0}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Performance Trends */}
-          <CollapsibleCard title="Performance Trends" defaultOpen={true}>
-            <Card className="bg-gradient-to-br from-card to-secondary/5 border-0 shadow-lg">
-              <CardHeader className="pb-4">
-              </CardHeader>
-
-              <CardContent>
-                {/* Filters FIXED */}
-                <div className="flex gap-4 mb-6">
-
-                  {/* Time Range Dropdown */}
+          <Card className="border-border/40 shadow-sm overflow-hidden">
+            <CardHeader className="bg-muted/30 border-b py-4">
+              <div className="flex items-center justify-between w-full">
+                <CardTitle className="text-base font-bold flex items-center gap-2">
+                  <BarChart3 className="h-4 w-4 text-primary" />
+                  Efficiency Trends
+                </CardTitle>
+                <div className="flex items-center gap-2">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className="h-10 px-3 gap-2 text-sm font-normal hover:bg-accent"
-                      >
-                        {timeRange === "1d" && "Last 1 Day"}
-                        {timeRange === "7d" && "Last 7 Days"}
-                        {timeRange === "30d" && "Last 30 Days"}
-                        {timeRange === "all" && "All Time"}
-                        <ChevronDown className="w-4 h-4 opacity-50" />
+                      <Button variant="ghost" size="sm" className="h-8 text-xs font-semibold">
+                        {timeRange === "all" ? "All Time" : `Last ${timeRange}`}
+                        <ChevronDown className="ml-1 h-3 w-3 opacity-50" />
                       </Button>
                     </DropdownMenuTrigger>
-
-                    <DropdownMenuContent className="w-56" align="start" side="bottom">
-                      <DropdownMenuItem onClick={() => setTimeRange("1d")}>
-                        <div className="flex flex-col">
-                          <span>Last 1 Day</span>
-                          <span className="text-xs text-muted-foreground">Most recent 24 hours</span>
-                        </div>
-                      </DropdownMenuItem>
-
-                      <DropdownMenuItem onClick={() => setTimeRange("7d")}>
-                        <div className="flex flex-col">
-                          <span>Last 7 Days</span>
-                          <span className="text-xs text-muted-foreground">Weekly view</span>
-                        </div>
-                      </DropdownMenuItem>
-
-                      <DropdownMenuItem onClick={() => setTimeRange("30d")}>
-                        <div className="flex flex-col">
-                          <span>Last 30 Days</span>
-                          <span className="text-xs text-muted-foreground">Monthly view</span>
-                        </div>
-                      </DropdownMenuItem>
-
-                      <DropdownMenuItem onClick={() => setTimeRange("all")}>
-                        <div className="flex flex-col">
-                          <span>All Time</span>
-                          <span className="text-xs text-muted-foreground">Full history</span>
-                        </div>
-                      </DropdownMenuItem>
+                    <DropdownMenuContent align="end" className="w-40">
+                      {["1d", "7d", "30d", "all"].map(r => (
+                        <DropdownMenuItem key={r} onClick={() => setTimeRange(r)}>
+                          {r === "all" ? "All Time" : `Last ${r}`}
+                        </DropdownMenuItem>
+                      ))}
                     </DropdownMenuContent>
                   </DropdownMenu>
-
-                  {/* Granularity Dropdown */}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className="h-10 px-3 gap-2 text-sm font-normal hover:bg-accent"
-                      >
-                        {granularity === "hour" && "Hourly"}
-                        {granularity === "daily" && "Daily"}
-                        {granularity === "weekly" && "Weekly"}
-                        {granularity === "monthly" && "Monthly"}
-                        <ChevronDown className="w-4 h-4 opacity-50" />
-                      </Button>
-                    </DropdownMenuTrigger>
-
-                    <DropdownMenuContent className="w-56" align="start" side="bottom">
-                      <DropdownMenuItem onClick={() => setGranularity("hour")}>
-                        <div className="flex flex-col">
-                          <span>Hourly</span>
-                          <span className="text-xs text-muted-foreground">Fine-grained trends</span>
-                        </div>
-                      </DropdownMenuItem>
-
-                      <DropdownMenuItem onClick={() => setGranularity("daily")}>
-                        <div className="flex flex-col">
-                          <span>Daily</span>
-                          <span className="text-xs text-muted-foreground">Day-by-day changes</span>
-                        </div>
-                      </DropdownMenuItem>
-
-                      <DropdownMenuItem onClick={() => setGranularity("weekly")}>
-                        <div className="flex flex-col">
-                          <span>Weekly</span>
-                          <span className="text-xs text-muted-foreground">Smooth weekly trend</span>
-                        </div>
-                      </DropdownMenuItem>
-
-                      <DropdownMenuItem onClick={() => setGranularity("monthly")}>
-                        <div className="flex flex-col">
-                          <span>Monthly</span>
-                          <span className="text-xs text-muted-foreground">Broad monthly view</span>
-                        </div>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-
                 </div>
-
-                <ResponsiveContainer width="100%" height={200}>
-                  <LineChart data={performanceLineData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              </div>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="h-[250px] w-full mt-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={performanceLineData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorSuccess" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--success))" stopOpacity={0.1} />
+                        <stop offset="95%" stopColor="hsl(var(--success))" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="colorPrimary" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.1} />
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                     <XAxis
                       dataKey="date"
-                      tick={{ fontSize: 12 }}
+                      tick={{ fontSize: 10 }}
                       axisLine={false}
                       tickLine={false}
+                      dy={10}
                     />
                     <YAxis
-                      tick={{ fontSize: 12 }}
+                      tick={{ fontSize: 10 }}
                       axisLine={false}
                       tickLine={false}
                       domain={[0, 100]}
                     />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: 'hsl(var(--background))',
+                        backgroundColor: 'hsl(var(--card))',
                         border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px',
-                        fontSize: '12px'
+                        borderRadius: '0.75rem',
+                        boxShadow: 'var(--shadow-card)',
+                        fontSize: '11px'
                       }}
-                      labelStyle={{ color: 'hsl(var(--foreground))' }}
                     />
-                    <Legend />
-                    <Line
+                    <Area
                       type="monotone"
                       dataKey="success_rate"
-                      stroke="#22c55e"
-                      strokeWidth={3}
-                      name="Success Rate (%)"
-                      dot={{ fill: '#22c55e', strokeWidth: 2, r: 4 }}
-                      activeDot={{ r: 6, stroke: '#22c55e', strokeWidth: 2 }}
+                      stroke="hsl(var(--success))"
+                      strokeWidth={2}
+                      fillOpacity={1}
+                      fill="url(#colorSuccess)"
+                      name="Success Rate"
                     />
-                    <Line
+                    <Area
                       type="monotone"
                       dataKey="cost_efficiency"
-                      stroke="#3b82f6"
-                      strokeWidth={3}
-                      name="Cost Efficiency (%)"
-                      dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
-                      activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2 }}
+                      stroke="hsl(var(--primary))"
+                      strokeWidth={2}
+                      fillOpacity={1}
+                      fill="url(#colorPrimary)"
+                      name="Efficiency"
                     />
-                  </LineChart>
+                  </AreaChart>
                 </ResponsiveContainer>
-
-                <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
-                  <div className="text-center p-2 rounded-lg bg-green-50 dark:bg-green-950/20">
-                    <div className="text-lg font-bold text-green-900 dark:text-green-100">
-                      {performanceLineData?.[performanceLineData.length - 1]?.success_rate?.toFixed(1) ?? 0}%
-                    </div>
-                    <div className="text-xs text-green-700 dark:text-green-300">Current Success Rate</div>
-                  </div>
-
-                  <div className="text-center p-2 rounded-lg bg-blue-50 dark:bg-blue-950/20">
-                    <div className="text-lg font-bold text-blue-900 dark:text-blue-100">
-                      {performanceLineData?.[performanceLineData.length - 1]?.cost_efficiency?.toFixed(1) ?? 0}%
-                    </div>
-                    <div className="text-xs text-blue-700 dark:text-blue-300">Current Efficiency</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </CollapsibleCard>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        <div className="flex flex-col gap-4">
-          {/* Model Performance Bar Chart */}
-          <CollapsibleCard title="Model Usage" defaultOpen={true}>
-            <Card className="bg-gradient-to-br from-card to-secondary/5 border-0 shadow-lg">
-              <CardHeader className="pb-4">
-              </CardHeader>
-
-              <CardContent>
-                <ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={barData} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
+        <div className="space-y-8">
+          {/* Model Distribution */}
+          <Card className="border-border/40 shadow-sm overflow-hidden flex flex-col">
+            <CardHeader className="bg-muted/30 border-b py-4">
+              <CardTitle className="text-base font-bold flex items-center gap-2">
+                <Brain className="h-4 w-4 text-primary" />
+                Model Distribution
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="h-[200px] mt-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={barData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                     <XAxis
                       dataKey="model"
-                      tick={{ fontSize: 11 }}
-                      angle={-45}
-                      textAnchor="end"
-                      height={60}
-                      interval={0}
+                      tick={false}
+                      axisLine={false}
+                      tickLine={false}
                     />
-                    <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+                    <YAxis
+                      tick={{ fontSize: 10 }}
+                      axisLine={false}
+                      tickLine={false}
+                      allowDecimals={false}
+                    />
                     <Tooltip
+                      cursor={{ fill: 'hsl(var(--muted)/0.3)' }}
                       contentStyle={{
-                        backgroundColor: 'hsl(var(--background))',
+                        backgroundColor: 'hsl(var(--card))',
                         border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px'
+                        borderRadius: '0.75rem',
+                        boxShadow: 'var(--shadow-card)',
+                        fontSize: '11px'
                       }}
                     />
                     <Bar
                       dataKey="count"
                       fill="hsl(var(--primary))"
                       radius={[4, 4, 0, 0]}
-                      fillOpacity={0.8}
+                      maxBarSize={40}
+                      name="Requests"
                     />
                   </BarChart>
                 </ResponsiveContainer>
+              </div>
 
-                <Separator className="my-4" />
-
-                <div className="space-y-3">
-                  <h4 className="font-medium text-sm">Top Performers</h4>
-                  {topModels.slice(0, 3).map((model, idx) => (
-                    <div key={model.model} className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${idx === 0 ? 'bg-amber-500' : idx === 1 ? 'bg-gray-400' : 'bg-amber-600'
-                          }`} />
-                        <span className="font-mono text-xs">{model.model}</span>
-                      </div>
-                      <span className="font-medium">{model.count}</span>
-                    </div>
-                  ))}
+              <div className="mt-8 space-y-3">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-sm font-bold tracking-tight uppercase text-muted-foreground/70">Resource Utilization</h4>
+                  <Badge variant="outline" className="text-[10px] font-bold border-primary/20 bg-primary/5 text-primary">Top 3 Nodes</Badge>
                 </div>
-              </CardContent>
-            </Card>
-          </CollapsibleCard>
+                {topModels.map((model, idx) => (
+                  <div key={model.model} className="p-3 rounded-xl bg-secondary/10 border border-border/40 flex items-center justify-between group hover:bg-secondary/20 transition-colors">
+                    <div className="flex items-center gap-4">
+                      <div className="h-8 w-8 rounded-lg bg-background border flex items-center justify-center text-xs font-bold shadow-sm">
+                        {idx + 1}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-bold tracking-tight">{model.model}</span>
+                        <div className="w-32 bg-secondary/50 h-1.5 rounded-full mt-1.5 overflow-hidden">
+                          <div
+                            className="bg-primary h-full rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(var(--primary),0.2)]"
+                            style={{ width: `${(model.count / totalRequests) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-bold tabular-nums">{model.count}</p>
+                      <p className="text-[10px] uppercase font-bold text-muted-foreground">Requests</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
 
-          {/* Model Latency Scatter Plot */}
-          <CollapsibleCard title="Model Latency" defaultOpen={true}>
-            <Card className="bg-gradient-to-br from-card to-secondary/5 border-0 shadow-lg">
-              <CardHeader className="pb-4">
-              </CardHeader>
-
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <ScatterChart data={latencyScatterData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+          {/* Infrastructure Health */}
+          <Card className="border-border/40 shadow-sm overflow-hidden">
+            <CardHeader className="bg-muted/30 border-b py-4">
+              <CardTitle className="text-base font-bold flex items-center gap-2">
+                <Cloud className="h-4 w-4 text-primary" />
+                Latency Scatter
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="h-[250px] mt-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <ScatterChart margin={{ top: 10, right: 10, bottom: 20, left: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                     <XAxis
                       type="number"
                       dataKey="usage"
-                      tick={{ fontSize: 12 }}
+                      name="Usage"
+                      tick={{ fontSize: 10 }}
                       axisLine={false}
                       tickLine={false}
-                      label={{ value: 'Usage Count', position: 'insideBottom', offset: -10 }}
+                      label={{ value: 'Total Requests', position: 'bottom', offset: 0, fontSize: 10 }}
                     />
                     <YAxis
                       type="number"
                       dataKey="latency"
-                      tick={{ fontSize: 12 }}
+                      name="Latency"
+                      unit="ms"
+                      tick={{ fontSize: 10 }}
                       axisLine={false}
                       tickLine={false}
-                      domain={['auto', 'auto']}
-                      label={{ value: 'Latency (ms)', angle: -90, position: 'insideLeft' }}
+                      label={{ value: 'Latency (ms)', angle: -90, position: 'left', offset: 10, fontSize: 10 }}
                     />
                     <Tooltip
-                      content={({ payload }) => {
-                        if (!payload || !payload.length) return null;
-
-                        const p = payload[0].payload;
-                        return (
-                          <div
-                            style={{
-                              background: "hsl(var(--background))",
-                              border: "1px solid hsl(var(--border))",
-                              borderRadius: "8px",
-                              padding: "8px",
-                              fontSize: "12px"
-                            }}
-                          >
-                            <div>model: {p.model}</div>
-                            <div>latency: {p.latency}ms</div>
-                            <div>usage count: {p.usage}</div>
-                          </div>
-                        );
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          const data = payload[0].payload;
+                          return (
+                            <div className="bg-card border border-border p-3 rounded-xl shadow-card">
+                              <p className="text-xs font-bold mb-1">{data.model}</p>
+                              <div className="space-y-1">
+                                <p className="text-[10px] text-muted-foreground">Latency: <span className="font-bold text-foreground">{data.latency}ms</span></p>
+                                <p className="text-[10px] text-muted-foreground">Traffic: <span className="font-bold text-foreground">{data.usage} reqs</span></p>
+                              </div>
+                            </div>
+                          );
+                        }
+                        return null;
                       }}
                     />
-
                     <Scatter
-                      dataKey="latency"
-                      fill="#8884d8"
-                      shape={(props: any) => {
-                        const { cx, cy, payload } = props;
-                        return <circle cx={cx} cy={cy} r={8} fill={payload.color} opacity={0.8} stroke={payload.color} strokeWidth={2} />;
-                      }}
-                    />
+                      name="Models"
+                      data={latencyScatterData}
+                      fill="hsl(var(--primary))"
+                    >
+                      {latencyScatterData.map((entry, index) => (
+                        <circle
+                          key={`cell-${index}`}
+                          cx={0} cy={0} r={6}
+                          fill={entry.color}
+                          fillOpacity={0.6}
+                          stroke={entry.color}
+                          strokeWidth={2}
+                        />
+                      ))}
+                    </Scatter>
                   </ScatterChart>
                 </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </CollapsibleCard>
+              </div>
+            </CardContent>
+          </Card>
+
         </div>
       </div>
     </div>
   );
+
 };

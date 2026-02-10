@@ -1,11 +1,8 @@
 import { useState } from "react";
 import { Card } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
-import { Separator } from "../components/ui/seperator";
 import { Button } from "../components/ui/button";
-import { CheckCircle, XCircle, AlertTriangle, ExternalLink, Brain, User, ChevronDown, ChevronUp, DollarSign, Zap, Clock, Newspaper, Shield, Copy } from "lucide-react";
-import { useState as useReactState } from "react";
-import { Card as UiCard } from "../components/ui/card";
+import { CheckCircle, XCircle, AlertTriangle, Brain, User, ChevronDown, DollarSign, Newspaper, Shield, Copy } from "lucide-react";
 import React from "react";
 
 export interface PlagiarismCheck {
@@ -82,7 +79,7 @@ export const ChatMessage = ({ message, isLoading = false, complianceEnabled = tr
   const isUser = message.type === 'user';
   const [isPlagiarismExpanded, setIsPlagiarismExpanded] = useState(false);
   const [isComplianceExpanded, setIsComplianceExpanded] = useState(false);
-  const [copied, setCopied] = useReactState(false);
+  const [copied, setCopied] = useState(false);
 
   // Try to parse the assistant's content as JSON
   let parsed = null;

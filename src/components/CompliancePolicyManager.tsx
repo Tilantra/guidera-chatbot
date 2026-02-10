@@ -114,11 +114,11 @@ export const CompliancePolicyManager = ({ complianceEnabled = true, client, isAc
   };
 
   return (
-    <div className="w-full max-w-[95vw] mx-auto p-6 space-y-6 bg-gradient-to-br from-background via-background to-secondary/5">
+    <div className="w-full max-w-[95vw] mx-auto p-6 space-y-6">
       {/* Header Section */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
         <div className="space-y-1">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent flex items-center gap-2">
+          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
             <Shield className="h-6 w-6 text-primary" />
             Policy Management
           </h1>
@@ -130,7 +130,7 @@ export const CompliancePolicyManager = ({ complianceEnabled = true, client, isAc
         <div className="flex items-center gap-4">
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="gap-2 bg-primary/90 hover:bg-primary">
+              <Button id="add-policy-button" className="gap-2 bg-primary/90 hover:bg-primary">
                 <Plus className="h-4 w-4" />
                 Add Policy
               </Button>
@@ -198,48 +198,26 @@ export const CompliancePolicyManager = ({ complianceEnabled = true, client, isAc
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <Card className="relative overflow-hidden bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/50 dark:to-blue-900/50 border-0">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-blue-700/70 dark:text-blue-300/70 leading-none mb-1">Total</p>
-                <p className="text-xl font-bold text-blue-900 dark:text-blue-100">{stats.total}</p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {[
+          { label: "Total Policies", value: stats.total, icon: FileText, color: "text-blue-600", bg: "bg-blue-50" },
+          { label: "Input Controls", value: stats.input, icon: Eye, color: "text-purple-600", bg: "bg-purple-50" },
+          { label: "Output Filters", value: stats.output, icon: EyeOff, color: "text-green-600", bg: "bg-green-50" }
+        ].map((stat, i) => (
+          <Card key={i} className="border-border/40 shadow-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">{stat.label}</p>
+                  <p className="text-2xl font-bold tracking-tight">{stat.value}</p>
+                </div>
+                <div className={`h-12 w-12 rounded-xl ${stat.bg} dark:bg-muted/10 flex items-center justify-center`}>
+                  <stat.icon className={`h-6 w-6 ${stat.color}`} />
+                </div>
               </div>
-              <div className="h-8 w-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                <FileText className="h-4 w-4 text-blue-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="relative overflow-hidden bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/50 dark:to-purple-900/50 border-0">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-purple-700/70 dark:text-purple-300/70 leading-none mb-1">Input</p>
-                <p className="text-xl font-bold text-purple-900 dark:text-purple-100">{stats.input}</p>
-              </div>
-              <div className="h-8 w-8 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                <Eye className="h-4 w-4 text-purple-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="relative overflow-hidden bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/50 dark:to-green-900/50 border-0">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-green-700/70 dark:text-green-300/70 leading-none mb-1">Output</p>
-                <p className="text-xl font-bold text-green-900 dark:text-green-100">{stats.output}</p>
-              </div>
-              <div className="h-8 w-8 rounded-lg bg-green-500/20 flex items-center justify-center">
-                <EyeOff className="h-4 w-4 text-green-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
 
@@ -253,7 +231,7 @@ export const CompliancePolicyManager = ({ complianceEnabled = true, client, isAc
           </div>
         </div>
       ) : policies.length === 0 ? (
-        <Card className="bg-gradient-to-br from-card to-secondary/5 border-0 shadow-lg">
+        <Card className="border border-dashed border-border/60 bg-secondary/10">
           <CardContent className="p-12 text-center">
             <Shield className="h-16 w-16 mx-auto mb-4 text-muted-foreground/50" />
             <h3 className="text-xl font-semibold text-foreground mb-2">
@@ -275,7 +253,7 @@ export const CompliancePolicyManager = ({ complianceEnabled = true, client, isAc
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
           {policies.map((policy) => (
-            <Card key={policy.id} className="bg-gradient-to-br from-card to-secondary/5 border-0 shadow-lg hover:shadow-xl transition-all duration-300 group">
+            <Card key={policy.id} className="border-border/40 shadow-sm hover:shadow-md transition-all duration-300 group overflow-hidden">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">

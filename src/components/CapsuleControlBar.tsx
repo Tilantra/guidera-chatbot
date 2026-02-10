@@ -25,6 +25,7 @@ export function CapsuleControlBar({
         <Button
           variant="ghost"
           size="sm"
+          id="capsule-hub-button"
           disabled={disabled}
           className="h-8 w-8 p-0 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-lg transition-all shadow-sm active:scale-95"
           title="Capsule Actions"

@@ -8,13 +8,12 @@ import { toast } from "sonner";
 import { useTheme } from "./ThemeProvider";
 import { Avatar } from "./Avatar";
 import { AvatarSelector } from "./AvatarSelector";
-import { User, Key, Palette, CreditCard, Bell, Shield, Lock, Plus, Trash2, Eye, EyeOff, Globe, Monitor, Sun, Moon, Settings2, Smartphone, Mail, MessageSquare, AlertTriangle, RotateCcw, BarChart3, Target, TrendingUp } from "lucide-react";
+import { User, Key, Palette, Bell, Shield, Lock, Plus, Trash2, Globe, Mail, MessageSquare, Settings2, CreditCard, Sun, Moon, Monitor, Target, RotateCcw, BarChart3, TrendingUp, Info, AlertTriangle } from "lucide-react";
 
 const sidebarItems = [
   { key: "profile", label: "Profile", icon: <User className="h-5 w-5" /> },
 
   { key: "theme", label: "Themes", icon: <Palette className="h-5 w-5" /> },
-  // { key: "credits", label: "Credits", icon: <CreditCard className="h-5 w-5" /> },
   { key: "notifications", label: "Notifications", icon: <Bell className="h-5 w-5" /> },
   { key: "security", label: "Security", icon: <Shield className="h-5 w-5" /> },
 ];
@@ -208,161 +207,79 @@ export const SettingsPage = () => {
 
       case "theme":
         return (
-          <Card className="p-6 w-full">
-            <h2 className="text-lg font-bold mb-6 flex items-center gap-2">
-              <Palette className="h-5 w-5" /> Appearance & Display
+          <Card className="p-6 w-full border-border/40 shadow-sm">
+            <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+              <Palette className="h-5 w-5 text-primary" /> Appearance & Display
             </h2>
 
             {/* Theme Selection */}
-            <div className="mb-8">
-              <h3 className="font-medium mb-4">Color Scheme</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-4">
-                <div
-                  className={`p-3 border-2 rounded-lg cursor-pointer transition-all ${theme === "light" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-                    }`}
-                  onClick={() => handleThemeChange("light")}
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-5 h-5 bg-white border rounded-full flex items-center justify-center">
-                      <Sun className="h-3 w-3 text-yellow-600" />
+            <div className="mb-10">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Color Scheme</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
+                {[
+                  { id: "light", label: "Light Mode", icon: Sun, color: "text-orange-500", bg: "bg-white" },
+                  { id: "dark", label: "Dark Mode", icon: Moon, color: "text-blue-400", bg: "bg-slate-950" },
+                  { id: "system", label: "System", icon: Monitor, color: "text-slate-500", bg: "bg-slate-100" },
+                  { id: "soft-dark", label: "Soft Dark", icon: Moon, color: "text-indigo-400", bg: "bg-slate-900" }
+                ].map((t) => (
+                  <div
+                    key={t.id}
+                    className={`p-4 border-2 rounded-xl cursor-pointer transition-all ${theme === t.id ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-primary/30"
+                      }`}
+                    onClick={() => handleThemeChange(t.id as any)}
+                  >
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className={`p-1.5 rounded-lg ${t.bg} border shadow-sm`}>
+                        <t.icon className={`h-4 w-4 ${t.color}`} />
+                      </div>
+                      <span className="text-xs font-bold tracking-tight">{t.label}</span>
                     </div>
-                    <span className="text-sm font-medium">Light</span>
-                  </div>
-                  <div className="w-full h-8 bg-gradient-to-br from-gray-50 to-gray-100 rounded border flex items-center justify-center">
-                    <div className="w-4 h-4 bg-white rounded shadow-sm"></div>
-                  </div>
-                </div>
-
-                <div
-                  className={`p-3 border-2 rounded-lg cursor-pointer transition-all ${theme === "dark" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-                    }`}
-                  onClick={() => handleThemeChange("dark")}
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-5 h-5 bg-gray-900 border rounded-full flex items-center justify-center">
-                      <Moon className="h-3 w-3 text-blue-400" />
+                    <div className={`w-full h-12 ${t.bg} rounded-lg border border-border/50 flex flex-col gap-1 p-2`}>
+                      <div className="w-2/3 h-1.5 bg-muted rounded-full"></div>
+                      <div className="w-full h-1.5 bg-muted/60 rounded-full"></div>
                     </div>
-                    <span className="text-sm font-medium">Dark</span>
                   </div>
-                  <div className="w-full h-8 bg-gradient-to-br from-gray-800 to-gray-900 rounded border flex items-center justify-center">
-                    <div className="w-4 h-4 bg-gray-700 rounded shadow-sm"></div>
-                  </div>
-                </div>
-
-                <div
-                  className={`p-3 border-2 rounded-lg cursor-pointer transition-all ${theme === "soft-dark" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-                    }`}
-                  onClick={() => handleThemeChange("soft-dark")}
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-5 h-5 bg-slate-800 border rounded-full flex items-center justify-center">
-                      <Moon className="h-3 w-3 text-slate-400" />
-                    </div>
-                    <span className="text-sm font-medium">Soft Dark</span>
-                  </div>
-                  <div className="w-full h-8 bg-gradient-to-br from-slate-700 to-slate-800 rounded border flex items-center justify-center">
-                    <div className="w-4 h-4 bg-slate-600 rounded shadow-sm"></div>
-                  </div>
-                </div>
-
-                <div
-                  className={`p-3 border-2 rounded-lg cursor-pointer transition-all ${theme === "system" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-                    }`}
-                  onClick={() => handleThemeChange("system")}
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-5 h-5 bg-gradient-to-r from-gray-200 to-gray-800 border rounded-full flex items-center justify-center">
-                      <Monitor className="h-3 w-3" />
-                    </div>
-                    <span className="text-sm font-medium">System</span>
-                  </div>
-                  <div className="w-full h-8 bg-gradient-to-r from-gray-100 to-gray-800 rounded border flex items-center justify-center">
-                    <div className="w-4 h-4 bg-gradient-to-r from-white to-gray-700 rounded shadow-sm"></div>
-                  </div>
-                </div>
-
-                <div
-                  className={`p-3 border-2 rounded-lg cursor-pointer transition-all ${theme === "light-high-contrast" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-                    }`}
-                  onClick={() => handleThemeChange("light-high-contrast")}
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-5 h-5 bg-white border-2 border-black rounded-full flex items-center justify-center">
-                      <Sun className="h-3 w-3 text-black" />
-                    </div>
-                    <span className="text-sm font-medium">Light HC</span>
-                  </div>
-                  <div className="w-full h-8 bg-white rounded border-2 border-black flex items-center justify-center">
-                    <div className="w-4 h-4 bg-black rounded"></div>
-                  </div>
-                </div>
-
-                <div
-                  className={`p-3 border-2 rounded-lg cursor-pointer transition-all ${theme === "dark-high-contrast" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-                    }`}
-                  onClick={() => handleThemeChange("dark-high-contrast")}
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-5 h-5 bg-black border-2 border-white rounded-full flex items-center justify-center">
-                      <Moon className="h-3 w-3 text-white" />
-                    </div>
-                    <span className="text-sm font-medium">Dark HC</span>
-                  </div>
-                  <div className="w-full h-8 bg-black rounded border-2 border-white flex items-center justify-center">
-                    <div className="w-4 h-4 bg-white rounded"></div>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 
             {/* Display Options */}
             <div className="space-y-6">
-              <h3 className="font-medium">Display Options</h3>
+              <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Display Consistency</h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-3 rounded-lg border">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                        <Settings2 className="h-4 w-4 text-primary" />
+                  {[
+                    { id: "highContrast", label: "High Contrast", desc: "Enhanced readability standards", icon: Shield },
+                    { id: "compactMode", label: "Compact Mode", desc: "Optimized density for efficiency", icon: Target }
+                  ].map((opt) => (
+                    <div key={opt.id} className="flex items-center justify-between p-4 rounded-xl border border-border/40 bg-secondary/10">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                          <opt.icon className="h-4 w-4 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold tracking-tight">{opt.label}</p>
+                          <p className="text-[10px] uppercase font-bold text-muted-foreground/60">{opt.desc}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium">High Contrast</p>
-                        <p className="text-sm text-muted-foreground">Use high contrast themes automatically</p>
-                      </div>
+                      <Switch
+                        checked={(displaySettings as any)[opt.id]}
+                        onCheckedChange={(value) => handleDisplaySettingChange(opt.id, value)}
+                      />
                     </div>
-                    <Switch
-                      checked={displaySettings.highContrast}
-                      onCheckedChange={(value) => handleDisplaySettingChange("highContrast", value)}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between p-3 rounded-lg border">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                        <Settings2 className="h-4 w-4 text-primary" />
-                      </div>
-                      <div>
-                        <p className="font-medium">Compact Mode</p>
-                        <p className="text-sm text-muted-foreground">Reduce spacing for more content</p>
-                      </div>
-                    </div>
-                    <Switch
-                      checked={displaySettings.compactMode}
-                      onCheckedChange={(value) => handleDisplaySettingChange("compactMode", value)}
-                    />
-                  </div>
+                  ))}
                 </div>
 
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-3 rounded-lg border">
+                  <div className="flex items-center justify-between p-4 rounded-xl border border-border/40 bg-secondary/10">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                        <Settings2 className="h-4 w-4 text-primary" />
+                      <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                        <RotateCcw className="h-4 w-4 text-primary" />
                       </div>
                       <div>
-                        <p className="font-medium">Reduced Motion</p>
-                        <p className="text-sm text-muted-foreground">Minimize animations and transitions</p>
+                        <p className="text-sm font-bold tracking-tight">Reduced Motion</p>
+                        <p className="text-[10px] uppercase font-bold text-muted-foreground/60">Minimize interface animations</p>
                       </div>
                     </div>
                     <Switch
@@ -371,38 +288,28 @@ export const SettingsPage = () => {
                     />
                   </div>
 
-                  <div className="p-3 rounded-lg border">
+                  <div className="p-4 rounded-xl border border-border/40 bg-secondary/10">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                      <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
                         <Settings2 className="h-4 w-4 text-primary" />
                       </div>
                       <div>
-                        <p className="font-medium">Font Size</p>
-                        <p className="text-sm text-muted-foreground">Adjust text size for readability</p>
+                        <p className="text-sm font-bold tracking-tight">Font Scaling</p>
+                        <p className="text-[10px] uppercase font-bold text-muted-foreground/60">Adjust visual hierarchy sizes</p>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant={displaySettings.fontSize === "small" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => handleDisplaySettingChange("fontSize", "small")}
-                      >
-                        Small
-                      </Button>
-                      <Button
-                        variant={displaySettings.fontSize === "medium" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => handleDisplaySettingChange("fontSize", "medium")}
-                      >
-                        Medium
-                      </Button>
-                      <Button
-                        variant={displaySettings.fontSize === "large" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => handleDisplaySettingChange("fontSize", "large")}
-                      >
-                        Large
-                      </Button>
+                    <div className="flex gap-2 p-1 bg-background/50 border rounded-lg">
+                      {["small", "medium", "large"].map((size) => (
+                        <Button
+                          key={size}
+                          variant={displaySettings.fontSize === size ? "default" : "ghost"}
+                          size="sm"
+                          className="flex-1 h-8 text-xs font-bold"
+                          onClick={() => handleDisplaySettingChange("fontSize", size)}
+                        >
+                          {size.charAt(0).toUpperCase() + size.slice(1)}
+                        </Button>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -412,139 +319,101 @@ export const SettingsPage = () => {
         );
       case "credits":
         return (
-          <div className="space-y-4">
-            {/* Credits Overview Dashboard */}
-            <Card className="p-4 w-full">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold flex items-center gap-2">
-                  <CreditCard className="h-5 w-5 text-primary" />
-                  Credits Dashboard
-                </h2>
-                <Badge variant="secondary" className="text-xs px-2 py-1">
-                  Pro Plan
+          <div className="space-y-6">
+            <Card className="p-6 w-full border-border/40 shadow-sm">
+              <div className="flex items-center justify-between mb-8">
+                <div className="space-y-1">
+                  <h2 className="text-xl font-bold flex items-center gap-2">
+                    <CreditCard className="h-5 w-5 text-primary" />
+                    Enterprise Credits
+                  </h2>
+                  <p className="text-xs text-muted-foreground">Manage your organization's resource allocation</p>
+                </div>
+                <Badge variant="secondary" className="px-3 py-1 font-bold text-[10px] uppercase tracking-wider bg-primary/10 text-primary border-none">
+                  Professional Plan
                 </Badge>
               </div>
 
-              <div className="mb-6">
-                {/* Main Stats Row */}
-                <div className="grid grid-cols-3 gap-3 mb-4">
-                  <div className="text-center p-3 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/40 rounded-lg border border-blue-200/50 dark:border-blue-800/50">
-                    <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-2">
-                      <CreditCard className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                {[
+                  { label: "Available", value: credits.available, icon: CreditCard, color: "text-blue-600", bg: "bg-blue-50" },
+                  { label: "Consumed", value: credits.used, icon: BarChart3, color: "text-orange-600", bg: "bg-orange-50" },
+                  { label: "Monthly Quota", value: credits.total, icon: Target, color: "text-green-600", bg: "bg-green-50" }
+                ].map((stat, i) => (
+                  <div key={i} className="p-6 rounded-2xl bg-secondary/20 border border-border/40 flex flex-col items-center text-center group hover:bg-secondary/40 transition-colors">
+                    <div className={`h-12 w-12 rounded-xl ${stat.bg} dark:bg-muted/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                      <stat.icon className={`h-6 w-6 ${stat.color}`} />
                     </div>
-                    <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">{credits.available}</div>
-                    <div className="text-xs text-blue-700 dark:text-blue-300">Available</div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">{stat.label}</p>
+                    <p className="text-3xl font-bold tabular-nums tracking-tighter">{stat.value}</p>
                   </div>
-
-                  <div className="text-center p-3 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/30 dark:to-orange-900/40 rounded-lg border border-orange-200/50 dark:border-orange-800/50">
-                    <div className="w-8 h-8 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-2">
-                      <BarChart3 className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-                    </div>
-                    <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">{credits.used}</div>
-                    <div className="text-xs text-orange-700 dark:text-orange-300">Used</div>
-                  </div>
-
-                  <div className="text-center p-3 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/30 dark:to-green-900/40 rounded-lg border border-green-200/50 dark:border-green-800/50">
-                    <div className="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-2">
-                      <Target className="h-4 w-4 text-green-600 dark:text-green-400" />
-                    </div>
-                    <div className="text-2xl font-bold text-green-900 dark:text-green-100">{credits.total}</div>
-                    <div className="text-xs text-green-700 dark:text-green-300">Total</div>
-                  </div>
-                </div>
-
-                {/* Usage Summary Card */}
-                <div className="p-4 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30 rounded-lg border border-purple-200/50 dark:border-purple-800/50">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-purple-500/20 rounded-full flex items-center justify-center">
-                        <TrendingUp className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                      </div>
-                      <div>
-                        <div className="text-lg font-semibold text-purple-900 dark:text-purple-100">
-                          {((credits.used / credits.total) * 100).toFixed(1)}% Usage
-                        </div>
-                        <div className="text-sm text-purple-700 dark:text-purple-300">
-                          {credits.available} credits remaining this month
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm text-muted-foreground">Monthly Limit</div>
-                      <div className="text-lg font-semibold">{credits.total}</div>
-                    </div>
-                  </div>
-                </div>
+                ))}
               </div>
 
-              {/* Compact Progress Bar */}
-              <div className="p-4 bg-muted/50 rounded-lg">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium">Monthly Usage</span>
-                  <span className="text-sm text-muted-foreground">{credits.used}/{credits.total}</span>
+              <div className="p-6 rounded-2xl bg-muted/30 border border-border/40">
+                <div className="flex justify-between items-center mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                      <TrendingUp className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <span className="text-sm font-bold">Usage Progress</span>
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase">{((credits.used / credits.total) * 100).toFixed(1)}% of limit reached</p>
+                    </div>
+                  </div>
+                  <span className="text-sm font-bold tabular-nums">{credits.used} / {credits.total}</span>
                 </div>
-                <div className="w-full bg-muted rounded-full h-2">
+                <div className="w-full bg-secondary h-2.5 rounded-full overflow-hidden p-0.5">
                   <div
-                    className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all"
+                    className="bg-primary h-full rounded-full transition-all duration-1000 shadow-lg shadow-primary/20"
                     style={{ width: `${Math.min((credits.used / credits.total) * 100, 100)}%` }}
                   ></div>
                 </div>
               </div>
             </Card>
 
-            {/* Compact Purchase Options */}
-            <Card className="p-4 w-full">
-              <h3 className="text-lg font-semibold mb-4">Add Credits</h3>
+            <Card className="p-6 w-full border-border/40 shadow-sm">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-6">Provision Additional Resources</h3>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="border rounded-lg p-4 hover:shadow-md transition-shadow text-center">
-                  <div className="space-y-3">
-                    <div className="text-xl font-bold">100</div>
-                    <div className="text-lg font-semibold text-primary">$9.99</div>
-                    <div className="text-xs text-muted-foreground">$0.10 per credit</div>
-                    <Button size="sm" variant="outline" className="w-full" onClick={() => handleBuyCredits(100)}>
-                      Purchase
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="border-2 border-primary rounded-lg p-4 bg-primary/5 relative text-center">
-                  <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground text-xs">
-                    Best Value
-                  </Badge>
-                  <div className="space-y-3">
-                    <div className="text-xl font-bold">500</div>
-                    <div>
-                      <div className="text-lg font-semibold text-primary">$39.99</div>
-                      <div className="text-xs text-green-600 font-medium">Save 20%</div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {[
+                  { amount: 100, price: "$9.99", unit: "$0.10/unit", tier: "Basic" },
+                  { amount: 500, price: "$39.99", unit: "$0.08/unit", tier: "Popular", featured: true, save: "20%" },
+                  { amount: 1000, price: "$69.99", unit: "$0.07/unit", tier: "Enterprise", save: "30%" }
+                ].map((pkg) => (
+                  <div
+                    key={pkg.amount}
+                    className={`relative p-6 rounded-2xl border transition-all hover:shadow-md ${pkg.featured ? "border-primary bg-primary/5 shadow-sm" : "border-border bg-secondary/10 hover:border-primary/40"
+                      }`}
+                  >
+                    {pkg.save && (
+                      <Badge className="absolute -top-2 left-6 bg-success text-success-foreground border-none font-bold text-[9px] uppercase px-2">
+                        Save {pkg.save}
+                      </Badge>
+                    )}
+                    <div className="space-y-4 text-center">
+                      <div>
+                        <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1">{pkg.tier}</p>
+                        <p className="text-3xl font-bold tracking-tighter">{pkg.amount}</p>
+                        <p className="text-[10px] font-bold text-muted-foreground">CREDITS</p>
+                      </div>
+                      <div className="py-2">
+                        <p className="text-2xl font-bold tracking-tight text-primary">{pkg.price}</p>
+                        <p className="text-[10px] font-medium text-muted-foreground">{pkg.unit}</p>
+                      </div>
+                      <Button size="sm" variant={pkg.featured ? "default" : "outline"} className="w-full font-bold h-10 shadow-sm" onClick={() => handleBuyCredits(pkg.amount)}>
+                        Provision
+                      </Button>
                     </div>
-                    <div className="text-xs text-muted-foreground">$0.08 per credit</div>
-                    <Button size="sm" className="w-full" onClick={() => handleBuyCredits(500)}>
-                      Purchase
-                    </Button>
                   </div>
-                </div>
-
-                <div className="border rounded-lg p-4 hover:shadow-md transition-shadow text-center">
-                  <div className="space-y-3">
-                    <div className="text-xl font-bold">1,000</div>
-                    <div>
-                      <div className="text-lg font-semibold text-primary">$69.99</div>
-                      <div className="text-xs text-green-600 font-medium">Save 30%</div>
-                    </div>
-                    <div className="text-xs text-muted-foreground">$0.07 per credit</div>
-                    <Button size="sm" variant="outline" className="w-full" onClick={() => handleBuyCredits(1000)}>
-                      Purchase
-                    </Button>
-                  </div>
-                </div>
+                ))}
               </div>
 
-              {/* Quick Info */}
-              <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-                <div className="text-sm text-blue-800 dark:text-blue-200">
-                  <span className="font-medium">💡 Credits never expire</span> • 1 credit = 1 AI check • Secure payment via Stripe
-                </div>
+              <div className="mt-8 p-4 bg-primary/5 rounded-xl border border-primary/20 flex items-center gap-3">
+                <Info className="h-5 w-5 text-primary shrink-0" />
+                <p className="text-xs font-medium leading-relaxed">
+                  <span className="font-bold">Enterprise Policy:</span> Credits are valid for the duration of your current contract cycle. Resource allocation is processed via secure Stripe gateway.
+                </p>
               </div>
             </Card>
           </div>

@@ -6,6 +6,7 @@ import { ChatMessage, type ChatResponse, type PerformanceMetrics } from "./ChatM
 import { ChatInput } from "./ChatInput";
 import { AnalyticsDashboard } from "./AnalyticsDashboard";
 import { CompliancePolicyManager } from "./CompliancePolicyManager";
+import { InteractiveTutorial } from "./InteractiveTutorial";
 
 // UUID generator function (uses crypto.randomUUID if available, otherwise fallback)
 const generateUUID = (): string => {
@@ -26,11 +27,10 @@ const generateUUID = (): string => {
   });
 };
 
-import { LoadingIndicator } from "./LoggingIndicator";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar } from "./Avatar";
 import { useTheme } from "./ThemeProvider";
-import { Shield, Brain, RotateCcw, Settings, MessageSquare, Bot, BarChart3, ShieldCheck, User, LogOut, HelpCircle } from "lucide-react";
+import { Shield, Brain, RotateCcw, Settings, MessageSquare, BarChart3, ShieldCheck, LogOut, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
 import GuideraLogo from '../components/assets/Guidera.png';
 import { SettingsPage } from "./SettingsPage";
@@ -42,148 +42,10 @@ import { CapsuleIndicator } from "./CapsuleIndicator";
 import { CreateTeamDialog } from "./CreateTeamDialog";
 import { TeamManagementDialog } from "./TeamManagementDialog";
 import { TeamDetailsPanel } from "./TeamDetailsPanel";
-import { InteractiveTutorial } from "./InteractiveTutorial";
 import { useCapsules } from "@/hooks/use-capsules";
 import type { ChatMessage as CapsuleChatMessage } from "@/lib/capsule-types";
 
-// Mock API call - replace with your actual API endpoint
-const mockApiCall = async (message: string): Promise<Omit<ChatResponse, 'id' | 'type' | 'timestamp'>> => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 2000));
-
-  // Mock response with different scenarios
-  const scenarios = [
-    // Compliance passed scenario
-    {
-      content: "Your content has been analyzed and meets all compliance standards. The text appears to be original with minimal similarity to existing sources. This analysis demonstrates our advanced AI capabilities while maintaining cost efficiency through optimized processing algorithms.",
-      model: "GPT-4-Compliance-v2.1",
-      performanceMetrics: {
-        costSaved: 0.43,
-        processingTime: 1850,
-        tokensUsed: 2400,
-        efficiency: 94
-      },
-      plagiarismCheck: {
-        percentage: 12,
-        sources: [
-          {
-            url: "https://example.com/article1",
-            title: "Similar Academic Paper on AI Ethics",
-            similarity: 8
-          },
-          {
-            url: "https://research.org/paper2",
-            title: "Technology Standards Documentation",
-            similarity: 4
-          }
-        ]
-      },
-      complianceCheck: {
-        status: 'passed' as const,
-        details: [
-          {
-            rule: "Privacy Compliance",
-            status: 'passed' as const,
-            description: "No personal information detected"
-          },
-          {
-            rule: "Content Guidelines",
-            status: 'passed' as const,
-            description: "Content adheres to community standards"
-          },
-          {
-            rule: "Copyright Check",
-            status: 'passed' as const,
-            description: "No copyright violations found"
-          }
-        ]
-      }
-    },
-    // Compliance failed scenario
-    {
-      content: "",
-      model: "GPT-4-Compliance-v2.1",
-      performanceMetrics: {
-        costSaved: 0.12,
-        processingTime: 920,
-        tokensUsed: 850,
-        efficiency: 67
-      },
-      complianceCheck: {
-        status: 'failed' as const,
-        details: [
-          {
-            rule: "Privacy Compliance",
-            status: 'failed' as const,
-            description: "Content contains potential personal identifiable information (PII) that violates privacy standards"
-          },
-          {
-            rule: "Content Guidelines",
-            status: 'failed' as const,
-            description: "Content may violate community guidelines regarding sensitive topics"
-          },
-          {
-            rule: "Copyright Check",
-            status: 'warning' as const,
-            description: "Potential copyright concern detected - manual review recommended"
-          }
-        ]
-      }
-    },
-    // Warning scenario
-    {
-      content: "Your content has been processed with some considerations. The analysis shows moderate similarity to existing sources and requires attention to certain compliance aspects. Our optimized processing ensures efficient analysis while maintaining thorough verification standards.",
-      model: "GPT-4-Compliance-v2.1",
-      performanceMetrics: {
-        costSaved: 0.28,
-        processingTime: 1340,
-        tokensUsed: 1950,
-        efficiency: 78
-      },
-      plagiarismCheck: {
-        percentage: 35,
-        sources: [
-          {
-            url: "https://wikipedia.org/article",
-            title: "Wikipedia Article on Related Topic",
-            similarity: 22
-          },
-          {
-            url: "https://news.com/article",
-            title: "Recent News Article",
-            similarity: 13
-          }
-        ]
-      },
-      complianceCheck: {
-        status: 'warning' as const,
-        details: [
-          {
-            rule: "Privacy Compliance",
-            status: 'passed' as const,
-            description: "No privacy violations detected"
-          },
-          {
-            rule: "Content Guidelines",
-            status: 'warning' as const,
-            description: "Content contains potentially sensitive material - review recommended"
-          },
-          {
-            rule: "Copyright Check",
-            status: 'passed' as const,
-            description: "No copyright violations found"
-          }
-        ]
-      }
-    }
-  ];
-
-  // Randomly select a scenario or choose based on message content
-  const scenarioIndex = message.toLowerCase().includes('fail') ? 1 :
-    message.toLowerCase().includes('warn') ? 2 : 0;
-
-  return scenarios[scenarioIndex];
-};
+// Main component
 
 export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate?: (prompt: string, cpValue: number, complianceEnabled: boolean, redactionEnabled: boolean, controlgrid: number) => Promise<any>, client: any, onLogout?: () => void }) => {
   const { userProfile } = useTheme();
@@ -200,17 +62,7 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
   const [usePreferredModel, setUsePreferredModel] = useState<boolean>(true);
   const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
 
-  // Analytics state
-  const [analyticsData, setAnalyticsData] = useState({
-    totalCostSaved: 0,
-    totalRequests: 0,
-    complianceChecks: 0,
-    redactions: 0,
-    plagiarismChecks: 0,
-    modelUsage: {} as Record<string, number>,
-    costSavingsOverTime: [] as Array<{ time: string; savings: number; cumulative: number }>,
-    dailyActivity: [] as Array<{ day: string; requests: number; compliance: number; redactions: number }>
-  });
+  // Capsule state
 
   // Capsule state
   const [saveCapsuleDialogOpen, setSaveCapsuleDialogOpen] = useState(false);
@@ -240,70 +92,12 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
 
   // Tutorial state
   const [tutorialOpen, setTutorialOpen] = useState(false);
+  const [controlGridOpen, setControlGridOpen] = useState(false);
 
   // Initialize capsule hook
   const capsuleHook = useCapsules(client);
 
-  // Update analytics when new messages are processed
-  useEffect(() => {
-    if (messages.length === 0) return;
-
-    const assistantMessages = messages.filter(m => m.type === 'assistant');
-    if (assistantMessages.length === 0) return;
-
-    // Calculate analytics from assistant messages
-    let totalCostSaved = 0;
-    let complianceChecks = 0;
-    let redactions = 0;
-    let plagiarismChecks = 0;
-    const modelUsage: Record<string, number> = {};
-    const costSavingsOverTime: Array<{ time: string; savings: number; cumulative: number }> = [];
-    let cumulativeSavings = 0;
-
-    assistantMessages.forEach((msg, index) => {
-      if (msg.performanceMetrics) {
-        totalCostSaved += msg.performanceMetrics.costSaved;
-        cumulativeSavings += msg.performanceMetrics.costSaved;
-
-        costSavingsOverTime.push({
-          time: `Request ${index + 1}`,
-          savings: msg.performanceMetrics.costSaved,
-          cumulative: cumulativeSavings
-        });
-      }
-
-      if (msg.complianceCheck) {
-        complianceChecks++;
-        if (msg.complianceCheck.status === 'failed') {
-          redactions++;
-        }
-      }
-
-      if (msg.plagiarismCheck) {
-        plagiarismChecks++;
-      }
-
-      if (msg.model) {
-        modelUsage[msg.model] = (modelUsage[msg.model] || 0) + 1;
-      }
-    });
-
-    // Generate daily activity (simplified for demo)
-    const dailyActivity = [
-      { day: 'Today', requests: assistantMessages.length, compliance: complianceChecks, redactions }
-    ];
-
-    setAnalyticsData({
-      totalCostSaved,
-      totalRequests: assistantMessages.length,
-      complianceChecks,
-      redactions,
-      plagiarismChecks,
-      modelUsage,
-      costSavingsOverTime,
-      dailyActivity
-    });
-  }, [messages]);
+  // Fetch user's capsules and teams on mount
 
   // Fetch user's capsules and teams on mount
   useEffect(() => {
@@ -508,8 +302,7 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
         // Fallback to onGenerate prop (for backward compatibility)
         response = await onGenerate(finalPrompt, cpValue[0], complianceEnabled, redactionEnabled, cpValue[1]);
       } else {
-        // Fallback to mock
-        response = await mockApiCall(finalPrompt);
+        throw new Error("No client availability for prompt generation");
       }
 
       // If onGenerate, prettify the response
@@ -710,85 +503,86 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
 
   return (
     <div className="flex flex-col h-screen bg-background text-left relative overflow-hidden">
-      {/* Subtle Background Elements (Matching Login) */}
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-5%] right-[-5%] w-[40%] h-[40%] bg-blue-100/30 dark:bg-blue-900/10 rounded-full blur-[100px]"></div>
-        <div className="absolute bottom-[-5%] left-[-5%] w-[40%] h-[40%] bg-primary/10 dark:bg-primary/5 rounded-full blur-[100px]"></div>
-      </div>
-
       {/* Header */}
-      <div className="px-4 pt-3 pb-1 relative z-10">
-        <Card className="p-3 border-border/40 bg-card/80 backdrop-blur-md shadow-elegant rounded-xl">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-1.5 rounded-lg bg-primary shadow-md shadow-primary/20">
-                <Bot className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <div>
-                <h1 className="text-lg font-bold tracking-tight text-foreground">Guidera ChatBot</h1>
-                <p className="text-[11px] text-muted-foreground/70 font-medium leading-none mt-0.5">
+      <header className="px-6 py-4 border-b bg-card/50 backdrop-blur-md sticky top-0 z-50">
+        <div className="container mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-[0_0_15px_rgba(var(--primary),0.3)]">
+              <ShieldCheck className="h-6 w-6 text-primary-foreground" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold tracking-tighter text-foreground leading-none mb-1">Guidera Chatbot</h1>
+              <div className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
                   Enterprise AI Orchestration Simplified
                 </p>
               </div>
             </div>
+          </div>
 
-            <div className="flex items-center gap-2">
-              {/* Help Button */}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setTutorialOpen(true)}
-                className="h-9 w-9"
-                title="Tutorial"
-              >
-                <HelpCircle className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleClearChat}
-                className="h-8 px-2.5 border-border/50 hover:bg-secondary/80 transition-all rounded-lg text-xs"
-              >
-                <RotateCcw className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
-                Clear
-              </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <div className="ml-1 cursor-pointer">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              id="clear-chat-button"
+              onClick={handleClearChat}
+              className="h-9 px-3 text-muted-foreground hover:text-destructive transition-colors"
+            >
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Clear
+            </Button>
+            <div className="h-6 w-px bg-border mx-1" />
+            <Button
+              variant="ghost"
+              size="sm"
+              id="help-button"
+              onClick={() => setTutorialOpen(true)}
+              className="h-9 px-3 text-primary bg-primary/5 hover:bg-primary/10 border border-primary/20"
+            >
+              <HelpCircle className="h-4 w-4 mr-2" />
+              Help
+            </Button>
+            <div className="h-6 w-px bg-border mx-1" />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <div className="flex items-center gap-3 pl-3 pr-2 py-1 rounded-xl bg-secondary/30 hover:bg-secondary/50 cursor-pointer transition-all border border-border/40 shadow-sm group">
+                  <div className="flex flex-col items-end">
+                    <span className="text-xs font-bold tracking-tight text-foreground line-clamp-1 group-hover:text-primary transition-colors">{userProfile.name}</span>
+                    <span className="text-[9px] uppercase font-bold text-muted-foreground/70 tracking-tight">Profile</span>
+                  </div>
+                  <div className="h-8 w-8 rounded-lg overflow-hidden border border-border/50 shadow-sm bg-background flex items-center justify-center">
                     <Avatar
                       style={userProfile.avatarStyle}
                       seed={userProfile.avatarSeed}
-                      size={32}
-                      className="border border-border hover:border-primary transition-colors"
+                      size={24}
                     />
                   </div>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => setActiveTab('settings')}>
-                    <Settings className="h-4 w-4 mr-2" />
-                    Settings
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={onLogout}>
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Logout
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem onClick={() => setActiveTab('settings')}>
+                  <Settings className="h-4 w-4 mr-2 text-muted-foreground" />
+                  Settings
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onLogout} className="text-destructive focus:text-destructive">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-        </Card>
-      </div>
+        </div>
+      </header>
 
       {/* Main Content */}
-      <div className="flex-1 relative z-10 flex flex-col min-h-0 container mx-auto px-4 overflow-hidden">
-        {/* Settings Page - Rendered Outside Tabs */}
+      <main className="flex-1 flex flex-col min-h-0 container mx-auto px-6 overflow-hidden">
         {activeTab === 'settings' && (
-          <div className="flex-1 flex flex-col min-h-0 py-4">
-            <div className="flex items-center gap-2 mb-4 p-2 border-b bg-background/50 backdrop-blur-sm rounded-t-xl">
-              <Button variant="outline" size="sm" onClick={() => setActiveTab('chat')}>
-                ← Back
+          <div className="flex-1 flex flex-col min-h-0 py-6 animate-fade-in">
+            <div className="flex items-center gap-2 mb-6">
+              <Button variant="ghost" size="sm" onClick={() => setActiveTab('chat')} className="text-muted-foreground hover:text-foreground">
+                ← Back to Dashboard
               </Button>
-              <h1 className="text-lg font-semibold">Settings</h1>
             </div>
             <div className="flex-1 min-h-0 overflow-y-auto">
               <SettingsPage />
@@ -796,31 +590,33 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
           </div>
         )}
 
-        {/* Tabs Content - Only when NOT in settings */}
         {activeTab !== 'settings' && (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
             <div className="py-2 sticky top-0 z-20 bg-background/0">
-              <TabsList className="grid w-full grid-cols-3 h-auto p-1 bg-muted/30 backdrop-blur-md rounded-xl border border-border/40 shadow-sm">
+              <TabsList className="grid w-full grid-cols-3 h-11 p-1 bg-secondary/20 backdrop-blur-md rounded-xl border border-border/40 shadow-sm">
                 <TabsTrigger
                   value="chat"
-                  className="flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-medium transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm hover:text-foreground/80"
+                  id="chat-tab-trigger"
+                  className="flex items-center justify-center gap-2 rounded-lg py-2 text-[10px] font-bold uppercase tracking-wider transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm hover:text-foreground/80"
                 >
                   <MessageSquare className="h-3.5 w-3.5" />
-                  Chat
+                  Chat Console
                 </TabsTrigger>
                 <TabsTrigger
                   value="policies"
-                  className="flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-medium transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm hover:text-foreground/80"
+                  id="policies-tab-trigger"
+                  className="flex items-center justify-center gap-2 rounded-lg py-2 text-[10px] font-bold uppercase tracking-wider transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm hover:text-foreground/80"
                 >
                   <ShieldCheck className="h-3.5 w-3.5" />
-                  Policies
+                  Policy Manager
                 </TabsTrigger>
                 <TabsTrigger
                   value="dashboard"
-                  className="flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-semibold transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-elegant hover:text-foreground/80"
+                  id="dashboard-tab-trigger"
+                  className="flex items-center justify-center gap-2 rounded-lg py-2 text-[10px] font-bold uppercase tracking-wider transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm hover:text-foreground/80"
                 >
                   <BarChart3 className="h-3.5 w-3.5" />
-                  Dashboard
+                  Analytics Hub
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -905,6 +701,8 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
                   onGenerateCapsule={handleGenerateCapsuleClick}
                   onDropCapsule={() => setDropCapsuleDialogOpen(true)}
                   capsuleDisabled={isLoading}
+                  controlGridOpen={controlGridOpen}
+                  onControlGridOpenChange={setControlGridOpen}
                 />
               </div>
             </TabsContent>
@@ -916,7 +714,25 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
             </TabsContent>
           </Tabs>
         )}
-      </div>
+
+        <InteractiveTutorial
+          open={tutorialOpen}
+          onOpenChange={setTutorialOpen}
+          onStepChange={(step) => {
+            if (step.id === 'policies') setActiveTab('policies');
+            if (step.id === 'dashboard') setActiveTab('dashboard');
+            if (step.id === 'welcome' || step.id === 'chat') setActiveTab('chat');
+
+            // Handle specialized actions
+            if (step.action === 'open-control-grid') {
+              setControlGridOpen(true);
+            } else if (step.action === 'close-popovers') {
+              setControlGridOpen(false);
+              // Other popovers could be closed here if needed
+            }
+          }}
+        />
+      </main>
 
       {/* Capsule Dialogs */}
       {client && (
@@ -1007,10 +823,6 @@ export const ComplianceChatBot = ({ onGenerate, client, onLogout }: { onGenerate
             }}
           />
 
-          <InteractiveTutorial
-            open={tutorialOpen}
-            onClose={() => setTutorialOpen(false)}
-          />
         </>
       )}
     </div>
